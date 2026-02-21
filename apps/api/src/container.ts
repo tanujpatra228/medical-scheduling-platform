@@ -33,6 +33,16 @@ import {
   CreateDoctorUseCase,
   GetPatientProfileUseCase,
   UpdatePatientProfileUseCase,
+  CreateAppointmentUseCase,
+  ConfirmAppointmentUseCase,
+  CancelAppointmentUseCase,
+  CompleteAppointmentUseCase,
+  GetAppointmentUseCase,
+  ListAppointmentsUseCase,
+  GetAvailableSlotsUseCase,
+  AvailabilityExpander,
+  OverrideMerger,
+  FreeSlotCalculator,
 } from "@msp/application";
 import { config } from "./config/environment";
 
@@ -44,17 +54,34 @@ export interface Container {
   tokenProvider: JwtTokenProvider;
   passwordHasher: Argon2PasswordHasher;
 
-  // Use Cases
+  // Use Cases - Auth
   registerPatient: RegisterPatientUseCase;
   login: LoginUseCase;
   refreshToken: RefreshTokenUseCase;
+
+  // Use Cases - Clinic
   getClinic: GetClinicUseCase;
   updateClinic: UpdateClinicUseCase;
+
+  // Use Cases - Doctor
   listDoctors: ListDoctorsUseCase;
   getDoctor: GetDoctorUseCase;
   createDoctor: CreateDoctorUseCase;
+
+  // Use Cases - Patient
   getPatientProfile: GetPatientProfileUseCase;
   updatePatientProfile: UpdatePatientProfileUseCase;
+
+  // Use Cases - Appointment
+  createAppointment: CreateAppointmentUseCase;
+  confirmAppointment: ConfirmAppointmentUseCase;
+  cancelAppointment: CancelAppointmentUseCase;
+  completeAppointment: CompleteAppointmentUseCase;
+  getAppointment: GetAppointmentUseCase;
+  listAppointments: ListAppointmentsUseCase;
+
+  // Use Cases - Availability
+  getAvailableSlots: GetAvailableSlotsUseCase;
 }
 
 export async function createContainer(): Promise<Container> {
@@ -76,9 +103,9 @@ export async function createContainer(): Promise<Container> {
   const clinicRepo = new TypeOrmClinicRepository(dataSource.getRepository(ClinicEntity));
   const doctorRepo = new TypeOrmDoctorRepository(dataSource.getRepository(DoctorEntity));
   const patientRepo = new TypeOrmPatientRepository(dataSource.getRepository(PatientEntity));
-  const _appointmentRepo = new TypeOrmAppointmentRepository(dataSource.getRepository(AppointmentEntity));
-  const _availabilityRuleRepo = new TypeOrmAvailabilityRuleRepository(dataSource.getRepository(AvailabilityRuleEntity));
-  const _availabilityOverrideRepo = new TypeOrmAvailabilityOverrideRepository(dataSource.getRepository(AvailabilityOverrideEntity));
+  const appointmentRepo = new TypeOrmAppointmentRepository(dataSource.getRepository(AppointmentEntity));
+  const availabilityRuleRepo = new TypeOrmAvailabilityRuleRepository(dataSource.getRepository(AvailabilityRuleEntity));
+  const availabilityOverrideRepo = new TypeOrmAvailabilityOverrideRepository(dataSource.getRepository(AvailabilityOverrideEntity));
   const _auditLogRepo = new TypeOrmAuditLogRepository(dataSource.getRepository(AuditLogEntity));
   const refreshTokenRepo = new TypeOrmRefreshTokenRepository(dataSource.getRepository(RefreshTokenEntity));
 
@@ -86,7 +113,12 @@ export async function createContainer(): Promise<Container> {
   const passwordHasher = new Argon2PasswordHasher();
   const tokenProvider = new JwtTokenProvider(config.jwt);
 
-  // 4. Create use cases with dependencies injected
+  // 4. Create calendar services
+  const expander = new AvailabilityExpander(availabilityRuleRepo);
+  const merger = new OverrideMerger(availabilityOverrideRepo);
+  const calculator = new FreeSlotCalculator(appointmentRepo);
+
+  // 5. Create use cases with dependencies injected
   const registerPatient = new RegisterPatientUseCase({
     userRepository: userRepo,
     patientRepository: patientRepo,
@@ -118,6 +150,17 @@ export async function createContainer(): Promise<Container> {
   const getPatientProfile = new GetPatientProfileUseCase(patientRepo);
   const updatePatientProfile = new UpdatePatientProfileUseCase(patientRepo);
 
+  // Appointment use cases
+  const createAppointment = new CreateAppointmentUseCase(appointmentRepo, doctorRepo, patientRepo);
+  const confirmAppointment = new ConfirmAppointmentUseCase(appointmentRepo);
+  const cancelAppointment = new CancelAppointmentUseCase(appointmentRepo);
+  const completeAppointment = new CompleteAppointmentUseCase(appointmentRepo);
+  const getAppointment = new GetAppointmentUseCase(appointmentRepo);
+  const listAppointments = new ListAppointmentsUseCase(appointmentRepo);
+
+  // Availability use case
+  const getAvailableSlots = new GetAvailableSlotsUseCase(doctorRepo, clinicRepo, expander, merger, calculator);
+
   return {
     dataSource,
     tokenProvider,
@@ -132,5 +175,12 @@ export async function createContainer(): Promise<Container> {
     createDoctor,
     getPatientProfile,
     updatePatientProfile,
+    createAppointment,
+    confirmAppointment,
+    cancelAppointment,
+    completeAppointment,
+    getAppointment,
+    listAppointments,
+    getAvailableSlots,
   };
 }
