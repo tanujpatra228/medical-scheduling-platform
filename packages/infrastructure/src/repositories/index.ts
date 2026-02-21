@@ -1,2 +1,9 @@
-// TypeORM repository adapters will be implemented in Phase 2
-export {};
+export { TypeOrmUserRepository } from "./typeorm-user.repository";
+export { TypeOrmClinicRepository } from "./typeorm-clinic.repository";
+export { TypeOrmDoctorRepository } from "./typeorm-doctor.repository";
+export { TypeOrmPatientRepository } from "./typeorm-patient.repository";
+export { TypeOrmAppointmentRepository } from "./typeorm-appointment.repository";
+export { TypeOrmAvailabilityRuleRepository } from "./typeorm-availability-rule.repository";
+export { TypeOrmAvailabilityOverrideRepository } from "./typeorm-availability-override.repository";
+export { TypeOrmAuditLogRepository } from "./typeorm-audit-log.repository";
+export { TypeOrmRefreshTokenRepository } from "./typeorm-refresh-token.repository";

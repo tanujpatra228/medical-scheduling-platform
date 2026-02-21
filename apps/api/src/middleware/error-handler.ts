@@ -1,6 +1,7 @@
 import { ErrorRequestHandler } from "express";
 import { StatusCodes } from "http-status-codes";
 import { AppError, ErrorCode } from "../errors/app-error";
+import { DomainError } from "@msp/domain";
 import { config } from "../config/environment";
 
 interface ErrorResponse {
@@ -12,6 +13,12 @@ interface ErrorResponse {
   };
 }
 
+const DOMAIN_ERROR_STATUS_MAP: Record<string, number> = {
+  EMAIL_ALREADY_EXISTS: StatusCodes.CONFLICT,
+  INVALID_CREDENTIALS: StatusCodes.UNAUTHORIZED,
+  INVALID_REFRESH_TOKEN: StatusCodes.UNAUTHORIZED,
+};
+
 function buildErrorResponse(error: AppError): ErrorResponse {
   return {
     success: false,
@@ -19,6 +26,16 @@ function buildErrorResponse(error: AppError): ErrorResponse {
       code: error.code,
       message: error.message,
       ...(error.details !== undefined && { details: error.details }),
+    },
+  };
+}
+
+function buildDomainErrorResponse(error: DomainError): ErrorResponse {
+  return {
+    success: false,
+    error: {
+      code: error.code,
+      message: error.message,
     },
   };
 }
@@ -45,6 +62,13 @@ export const globalErrorHandler: ErrorRequestHandler = (
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json(buildErrorResponse(err));
+    return;
+  }
+
+  if (err instanceof DomainError) {
+    const statusCode =
+      DOMAIN_ERROR_STATUS_MAP[err.code] ?? StatusCodes.BAD_REQUEST;
+    res.status(statusCode).json(buildDomainErrorResponse(err));
     return;
   }
 

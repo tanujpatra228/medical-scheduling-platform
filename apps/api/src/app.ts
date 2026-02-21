@@ -4,17 +4,18 @@ import { requestIdMiddleware } from "./middleware/request-id";
 import { notFoundHandler } from "./middleware/not-found";
 import { globalErrorHandler } from "./middleware/error-handler";
 import { registerRoutes } from "./routes";
+import type { Container } from "./container";
 
 const MAX_REQUEST_BODY_SIZE = "10kb";
 
-export function createApp(): Express {
+export function createApp(container?: Container): Express {
   const app = express();
 
   app.use(express.json({ limit: MAX_REQUEST_BODY_SIZE }));
   app.use(corsMiddleware);
   app.use(requestIdMiddleware);
 
-  app.use(config.apiPrefix, registerRoutes());
+  app.use(config.apiPrefix, registerRoutes(container));
 
   app.use(notFoundHandler);
   // Express 5 types require explicit cast for error handlers (4-arg middleware)

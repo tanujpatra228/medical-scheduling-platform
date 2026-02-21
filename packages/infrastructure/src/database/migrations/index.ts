@@ -1,1 +1,1 @@
-// Database migrations will be generated in Phase 2
+export { InitialSchema1700000000000 } from "./1700000000000-InitialSchema";
