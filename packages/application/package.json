@@ -11,10 +11,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@msp/domain": "workspace:*",
     "@msp/shared": "workspace:*",
-    "@msp/domain": "workspace:*"
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/uuid": "^11.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

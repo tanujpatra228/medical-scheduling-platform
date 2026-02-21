@@ -1,8 +1,17 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Request } from "express";
-
-declare module "express" {
-  interface Request {
-    id: string;
+declare global {
+  namespace Express {
+    interface Request {
+      id: string;
+      user?: {
+        userId: string;
+        clinicId: string;
+        role: string;
+      };
+      validatedBody?: unknown;
+      validatedParams?: unknown;
+      validatedQuery?: unknown;
+    }
   }
 }
+
+export {};

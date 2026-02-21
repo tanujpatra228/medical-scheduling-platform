@@ -1,34 +1,29 @@
 # Completed Tasks - Medical Scheduling Platform
 
 ## Phase 0: Project Foundation & Infrastructure Setup
-
-- [x] **P0-T1**: Create Docker Compose configuration (PostgreSQL 16 + Redis 7)
-- [x] **P0-T2**: Create environment configuration files (Zod-validated, 15 vars)
-- [x] **P0-T3**: Configure shared package (`@msp/shared`) - Result<T,E>, PaginatedResult, TenantContext, UserRole, constants
-- [x] **P0-T4**: Configure domain package (`@msp/domain`) - DomainError base class, directory scaffolding
-- [x] **P0-T5**: Configure application package (`@msp/application`) - ports, DTOs, use-cases, services scaffolding
-- [x] **P0-T6**: Configure infrastructure package (`@msp/infrastructure`) - database, cache, auth, email, queue scaffolding
-- [x] **P0-T7**: Configure API app with workspace package references (cors, helmet, express-rate-limit)
-- [x] **P0-T8**: Verify monorepo build pipeline (all 5 packages typecheck, 73 tests passing)
+- [x] P0-T1 through P0-T8: All complete
 
 ## Phase 1: Domain Layer
+- [x] P1-T1 through P1-T9: All complete (218 tests)
 
-- [x] **P1-T1**: Value objects - Email (validated/normalized), AppointmentStatus, TimeSlot (overlap detection), DateRange
-- [x] **P1-T2**: Domain errors - InvalidStateTransitionError, SlotNotAvailableError, DoubleBookingError + entity-specific errors
-- [x] **P1-T3**: Appointment state machine - PENDING->CONFIRMED->CANCELLED/COMPLETED/NO_SHOW with terminal detection
-- [x] **P1-T4**: Domain events - AppointmentCreated/Confirmed/Cancelled/Completed/NoShow with serializable payloads
-- [x] **P1-T5**: Appointment entity - create(), confirm(), cancel(), complete(), markNoShow(), pullDomainEvents()
-- [x] **P1-T6**: Remaining entities - Clinic, User, Doctor, Patient, AvailabilityRule, AvailabilityOverride, AuditLog
-- [x] **P1-T7**: Domain layer barrel exports (all entities, VOs, events, errors, state machine)
-- [x] **P1-T8**: State machine tests (38 tests, 100% branch coverage)
-- [x] **P1-T9**: Value object and entity tests (180 additional tests)
+## Phase 2: Infrastructure Layer - Database
+- [x] **P2-T1**: TypeORM data source configuration (PostgreSQL, SSL, pooling)
+- [x] **P2-T2**: TypeORM entity mappings (9 entities with indexes, constraints, relations)
+- [x] **P2-T4**: Domain-to-ORM entity mappers (8 bidirectional mappers)
+- [x] **P2-T7**: Redis cache adapter with SCAN-based pattern deletion (10 tests)
 
-## Pre-Phase 0: API Foundation
+## Phase 3: Application Layer
+- [x] **P3-T1**: Port interfaces (9 repository + 6 service ports)
+- [x] **P3-T2**: Common DTOs (auth, appointment, doctor, availability)
+- [x] **P3-T3**: RegisterPatient use case (8 tests)
+- [x] **P3-T4**: Login use case (7 tests)
+- [x] **P3-T5**: RefreshToken use case with token rotation (9 tests)
+- [x] **P3-T6**: Clinic management use cases - GetClinic, UpdateClinic (6 tests)
+- [x] **P3-T7**: Doctor management use cases - ListDoctors, GetDoctor, CreateDoctor (5 tests)
+- [x] **P3-T8**: Patient use cases - GetPatientProfile, UpdatePatientProfile (4 tests)
+- [x] **P3-T9**: Application layer barrel exports
 
-- [x] API restructured with clean architecture (app factory, middleware pipeline)
-- [x] Event-driven architecture foundation (TypedEventBus, AggregateRoot, DomainEvent)
-- [x] TDD setup with Vitest + Supertest
-- [x] Custom error handling (AppError, ErrorCode enum, globalErrorHandler)
-- [x] Health check endpoint with tests
-- [x] Request ID middleware
-- [x] Environment validation with Zod v4
+## Phase 4: API Layer (Partial)
+- [x] **P4-T1**: Express middleware stack - auth, tenant, validation (16 tests)
+- [x] **P4-T3**: Auth infrastructure adapters - Argon2PasswordHasher, JwtTokenProvider (12 tests)
+- [x] **P4-T6**: Role-based access control middleware (6 tests)
