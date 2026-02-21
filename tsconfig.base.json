@@ -4,12 +4,12 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
-    "baseUrl": ".",
-    "paths": {
-      "@domain/*": ["packages/domain/src/*"],
-      "@application/*": ["packages/application/src/*"],
-      "@infrastructure/*": ["packages/infrastructure/src/*"],
-      "@shared/*": ["packages/shared/src/*"]
-    }
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
   }
 }

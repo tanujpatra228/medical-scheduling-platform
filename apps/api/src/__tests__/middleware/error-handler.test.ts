@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import express, { type Request, type Response, type NextFunction } from 'express';
+import express, { type RequestHandler } from 'express';
 import request from 'supertest';
 import { AppError } from '@api/errors/app-error';
 import { globalErrorHandler } from '@api/middleware/error-handler';
@@ -12,11 +12,13 @@ import { globalErrorHandler } from '@api/middleware/error-handler';
 function createAppWithError(error: Error) {
   const app = express();
 
-  app.get('/test', (_req: Request, _res: Response, next: NextFunction) => {
+  const throwError: RequestHandler = (_req, _res, next) => {
     next(error);
-  });
+  };
+  app.get('/test', throwError);
 
-  app.use(globalErrorHandler);
+  // Express 5 types require explicit cast for error handlers (4-arg middleware)
+  app.use(globalErrorHandler as unknown as RequestHandler);
 
   return app;
 }

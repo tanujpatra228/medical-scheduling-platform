@@ -1,7 +1,20 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "skipLibCheck": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@msp/shared": ["../shared/src"],
+      "@msp/shared/*": ["../shared/src/*"],
+      "@msp/domain": ["../domain/src"],
+      "@msp/domain/*": ["../domain/src/*"],
+      "@msp/application": ["../application/src"],
+      "@msp/application/*": ["../application/src/*"]
+    }
   },
   "include": ["src"]
 }

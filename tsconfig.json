@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@msp/shared": ["packages/shared/src"],
+      "@msp/shared/*": ["packages/shared/src/*"],
+      "@msp/domain": ["packages/domain/src"],
+      "@msp/domain/*": ["packages/domain/src/*"],
+      "@msp/application": ["packages/application/src"],
+      "@msp/application/*": ["packages/application/src/*"],
+      "@msp/infrastructure": ["packages/infrastructure/src"],
+      "@msp/infrastructure/*": ["packages/infrastructure/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist", "**/dist"]
+}

@@ -17,7 +17,8 @@ export function createApp(): Express {
   app.use(config.apiPrefix, registerRoutes());
 
   app.use(notFoundHandler);
-  app.use(globalErrorHandler);
+  // Express 5 types require explicit cast for error handlers (4-arg middleware)
+  app.use(globalErrorHandler as unknown as RequestHandler);
 
   return app;
 }

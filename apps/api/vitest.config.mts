@@ -1,24 +1,19 @@
-import { defineConfig } from 'vitest/config';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+import { defineConfig } from "vitest/config";
+import path from "path";
 
 export default defineConfig({
   test: {
     globals: true,
-    environment: 'node',
-    root: './src',
-    include: ['**/__tests__/**/*.test.ts'],
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'lcov'],
-      exclude: ['**/__tests__/**', '**/types/**'],
-    },
+    environment: "node",
+    root: ".",
   },
   resolve: {
     alias: {
-      '@api': path.resolve(__dirname, './src'),
+      "@api": path.resolve(__dirname, "src"),
+      "@msp/shared": path.resolve(__dirname, "../../packages/shared/src"),
+      "@msp/domain": path.resolve(__dirname, "../../packages/domain/src"),
+      "@msp/application": path.resolve(__dirname, "../../packages/application/src"),
+      "@msp/infrastructure": path.resolve(__dirname, "../../packages/infrastructure/src"),
     },
   },
 });

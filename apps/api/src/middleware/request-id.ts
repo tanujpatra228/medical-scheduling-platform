@@ -1,17 +1,13 @@
-import { Request, Response, NextFunction } from "express";
+import { RequestHandler } from "express";
 import { randomUUID } from "crypto";
 
 const REQUEST_ID_HEADER = "X-Request-Id";
 
-export function requestIdMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
+export const requestIdMiddleware: RequestHandler = (req, res, next) => {
   const requestId = randomUUID();
 
-  (req as Request & { id: string }).id = requestId;
+  (req as typeof req & { id: string }).id = requestId;
   res.setHeader(REQUEST_ID_HEADER, requestId);
 
   next();
-}
+};

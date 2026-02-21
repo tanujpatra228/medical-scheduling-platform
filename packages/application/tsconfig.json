@@ -1,7 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@msp/shared": ["../shared/src"],
+      "@msp/shared/*": ["../shared/src/*"],
+      "@msp/domain": ["../domain/src"],
+      "@msp/domain/*": ["../domain/src/*"]
+    }
   },
   "include": ["src"]
 }
