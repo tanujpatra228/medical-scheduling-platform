@@ -1,0 +1,43 @@
+import express, { Express, RequestHandler } from "express";
+import { config } from "./config/environment";
+import { requestIdMiddleware } from "./middleware/request-id";
+import { notFoundHandler } from "./middleware/not-found";
+import { globalErrorHandler } from "./middleware/error-handler";
+import { registerRoutes } from "./routes";
+
+const MAX_REQUEST_BODY_SIZE = "10kb";
+
+export function createApp(): Express {
+  const app = express();
+
+  app.use(express.json({ limit: MAX_REQUEST_BODY_SIZE }));
+  app.use(corsMiddleware);
+  app.use(requestIdMiddleware);
+
+  app.use(config.apiPrefix, registerRoutes());
+
+  app.use(notFoundHandler);
+  app.use(globalErrorHandler);
+
+  return app;
+}
+
+const corsMiddleware: RequestHandler = (req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", config.corsOrigin);
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Request-Id"
+  );
+  res.setHeader("Access-Control-Expose-Headers", "X-Request-Id");
+
+  if (req.method === "OPTIONS") {
+    res.status(204).end();
+    return;
+  }
+
+  next();
+};

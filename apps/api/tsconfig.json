@@ -1,7 +1,26 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "outDir": "dist",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "declaration": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "paths": {
+      "@api/*": ["src/*"],
+      "@domain/*": ["../../packages/domain/src/*"],
+      "@application/*": ["../../packages/application/src/*"],
+      "@infrastructure/*": ["../../packages/infrastructure/src/*"],
+      "@shared/*": ["../../packages/shared/src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    },
+    "transpileOnly": true
+  }
 }
