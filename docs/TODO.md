@@ -2,14 +2,17 @@
 
 ## In Progress
 
-### Phase 1: Domain Layer
+### Phase 2: Infrastructure Layer - Database
 
-- [ ] **P1-T1**: Implement shared value objects (Email, AppointmentStatus, TimeSlot, DateRange)
-- [ ] **P1-T2**: Implement domain errors (InvalidStateTransitionError, SlotNotAvailableError, etc.)
-- [ ] **P1-T3**: Implement appointment state machine (PENDING -> CONFIRMED -> CANCELLED/COMPLETED/NO_SHOW)
-- [ ] **P1-T4**: Implement domain events (AppointmentCreated, Confirmed, Cancelled, Completed, NoShow)
-- [ ] **P1-T5**: Implement Appointment entity with state transitions and event emission
-- [ ] **P1-T6**: Implement remaining domain entities (Clinic, User, Doctor, Patient, AvailabilityRule, etc.)
-- [ ] **P1-T7**: Create domain layer barrel exports
-- [ ] **P1-T8**: Unit tests for appointment state machine (100% branch coverage)
-- [ ] **P1-T9**: Unit tests for value objects and entities
+- [ ] **P2-T1**: Create TypeORM data source configuration
+- [ ] **P2-T2**: Create TypeORM entity mappings (9 entities)
+- [ ] **P2-T3**: Generate initial database migration
+- [ ] **P2-T4**: Implement domain-to-ORM entity mappers
+- [ ] **P2-T5**: Implement repository adapters (clinic-scoped)
+- [ ] **P2-T6**: Create development seed data
+- [ ] **P2-T7**: Implement Redis cache adapter
+
+## Up Next
+
+### Phase 3: Application Layer - Core Use Cases
+### Phase 4: API Layer - Auth & User Management

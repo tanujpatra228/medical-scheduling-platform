@@ -11,11 +11,19 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@msp/shared": "workspace:*",
+    "@msp/application": "workspace:*",
     "@msp/domain": "workspace:*",
-    "@msp/application": "workspace:*"
+    "@msp/shared": "workspace:*",
+    "argon2": "^0.44.0",
+    "ioredis": "^5.9.3",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.18.0",
+    "typeorm": "^0.3.28",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/uuid": "^11.0.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

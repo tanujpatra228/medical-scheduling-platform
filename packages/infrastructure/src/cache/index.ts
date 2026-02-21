@@ -1,2 +1,2 @@
-// Redis cache adapter will be implemented in Phase 2
-export {};
+export { RedisCacheAdapter } from "./redis-cache.adapter";
+export type { ICachePort, RedisConfig } from "./redis-cache.adapter";
