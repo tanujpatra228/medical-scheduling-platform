@@ -31,4 +31,16 @@
 - [x] **P4-T2**: Dependency injection container (composition root)
 - [x] **P4-T3**: Auth infrastructure adapters - Argon2PasswordHasher, JwtTokenProvider (12 tests)
 - [x] **P4-T4**: Auth routes and controllers with Zod validation (25 tests)
+- [x] **P4-T5**: User management routes - clinic, doctor, patient CRUD (36 tests)
 - [x] **P4-T6**: Role-based access control middleware (6 tests)
+
+## Phase 5: Calendar Engine
+- [x] **P5-T1**: AvailabilityExpander - weekly rule expansion (5 tests)
+- [x] **P5-T2**: OverrideMerger - day-off and time override handling (4 tests)
+- [x] **P5-T3**: FreeSlotCalculator - slot splitting with occupancy check (8 tests)
+- [x] **P5-T4**: GetAvailableSlots use case + availability API route (7 tests)
+
+## Phase 6: Booking System
+- [x] **P6-T1**: CreateAppointment use case with double-booking guard (5 tests)
+- [x] **P6-T2**: Appointment management use cases - confirm, cancel, complete, get, list (8 tests)
+- [x] **P6-T3**: Booking API routes with validation and RBAC (18 tests)
