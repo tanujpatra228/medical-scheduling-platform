@@ -1,0 +1,76 @@
+# -----------------------------
+# Node / Package Managers
+# -----------------------------
+node_modules/
+.pnpm-store/
+.pnp.*
+package-lock.json
+yarn.lock
+
+# -----------------------------
+# Build Outputs
+# -----------------------------
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Vite
+apps/web/dist/
+
+# -----------------------------
+# Environment Files
+# -----------------------------
+.env
+.env.*
+!.env.example
+
+# -----------------------------
+# Logs
+# -----------------------------
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -----------------------------
+# OS / Editor
+# -----------------------------
+.DS_Store
+Thumbs.db
+
+.vscode/
+.idea/
+
+# -----------------------------
+# Runtime / Temp
+# -----------------------------
+tmp/
+temp/
+.cache/
+
+# -----------------------------
+# Testing
+# -----------------------------
+coverage/
+.nyc_output/
+
+# -----------------------------
+# Docker
+# -----------------------------
+docker-compose.override.yml
+
+# -----------------------------
+# Prisma (if you add it later)
+# -----------------------------
+prisma/*.db
+prisma/*.db-journal
+
+# -----------------------------
+# Misc
+# -----------------------------
+*.pem
+*.key
+*.crt

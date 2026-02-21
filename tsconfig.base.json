@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["packages/domain/src/*"],
+      "@application/*": ["packages/application/src/*"],
+      "@infrastructure/*": ["packages/infrastructure/src/*"],
+      "@shared/*": ["packages/shared/src/*"]
+    }
+  }
+}
