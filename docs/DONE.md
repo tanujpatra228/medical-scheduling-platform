@@ -9,7 +9,10 @@
 ## Phase 2: Infrastructure Layer - Database
 - [x] **P2-T1**: TypeORM data source configuration (PostgreSQL, SSL, pooling)
 - [x] **P2-T2**: TypeORM entity mappings (9 entities with indexes, constraints, relations)
+- [x] **P2-T3**: Initial database migration (9 tables, enums, indexes, constraints)
 - [x] **P2-T4**: Domain-to-ORM entity mappers (8 bidirectional mappers)
+- [x] **P2-T5**: Repository adapters - 9 TypeORM repos with clinic-scoped queries (43 tests)
+- [x] **P2-T6**: Development seed data (clinic, admin, 2 doctors, 3 patients, availability)
 - [x] **P2-T7**: Redis cache adapter with SCAN-based pattern deletion (10 tests)
 
 ## Phase 3: Application Layer
@@ -23,7 +26,9 @@
 - [x] **P3-T8**: Patient use cases - GetPatientProfile, UpdatePatientProfile (4 tests)
 - [x] **P3-T9**: Application layer barrel exports
 
-## Phase 4: API Layer (Partial)
+## Phase 4: API Layer
 - [x] **P4-T1**: Express middleware stack - auth, tenant, validation (16 tests)
+- [x] **P4-T2**: Dependency injection container (composition root)
 - [x] **P4-T3**: Auth infrastructure adapters - Argon2PasswordHasher, JwtTokenProvider (12 tests)
+- [x] **P4-T4**: Auth routes and controllers with Zod validation (25 tests)
 - [x] **P4-T6**: Role-based access control middleware (6 tests)
