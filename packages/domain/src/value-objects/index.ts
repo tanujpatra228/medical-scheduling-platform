@@ -1,1 +1,4 @@
-// Value objects will be implemented in Phase 1
+export { Email, InvalidEmailError } from "./email";
+export { AppointmentStatus } from "./appointment-status";
+export { TimeSlot, InvalidTimeSlotError } from "./time-slot";
+export { DateRange, InvalidDateRangeError } from "./date-range";

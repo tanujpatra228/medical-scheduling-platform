@@ -1,1 +1,1 @@
-// Appointment state machine will be implemented in Phase 1
+export { AppointmentStateMachine } from "./appointment-state-machine";
