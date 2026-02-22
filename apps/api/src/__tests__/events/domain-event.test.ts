@@ -17,6 +17,10 @@ class TestEvent implements DomainEvent {
     this.occurredAt = new Date();
     this.aggregateId = aggregateId;
   }
+
+  toPayload(): Record<string, unknown> {
+    return { eventType: this.eventType, aggregateId: this.aggregateId };
+  }
 }
 
 describe('createEventId', () => {

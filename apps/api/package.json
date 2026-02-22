@@ -8,12 +8,14 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.mts"
   },
   "dependencies": {
     "@msp/application": "workspace:*",
     "@msp/infrastructure": "workspace:*",
     "@msp/shared": "workspace:*",
+    "bullmq": "^5.70.0",
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",

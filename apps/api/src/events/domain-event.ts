@@ -24,6 +24,9 @@ export interface DomainEvent {
 
   /** ID of the aggregate/entity that emitted this event */
   readonly aggregateId: string;
+
+  /** Serializes the event data to a plain object for handlers/transport */
+  toPayload(): Record<string, unknown>;
 }
 
 /**

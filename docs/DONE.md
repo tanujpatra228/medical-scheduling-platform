@@ -45,5 +45,12 @@
 - [x] **P6-T2**: Appointment management use cases - confirm, cancel, complete, get, list (8 tests)
 - [x] **P6-T3**: Booking API routes with validation and RBAC (18 tests)
 
-## Phase 4 (continued): API Documentation
+## Phase 4 (continued): API Documentation & Integration Tests
 - [x] **P4-T7**: Swagger/OpenAPI 3.1.0 documentation — full spec for all 18 endpoints with Swagger UI at `/api-docs` (non-production only)
+- [x] **P4-T8**: Auth flow integration tests — full lifecycle (register → login → refresh → protected route), token rotation, duplicate email, wrong password, missing/invalid token (6 tests)
+
+## Phase 7: Background Jobs & Notifications
+- [x] **P7-T1**: Email service adapter — Nodemailer adapter (SmtpConfig), ConsoleEmailAdapter (dev/test), 3 email templates (confirmation, cancellation, 24h reminder) (10 tests)
+- [x] **P7-T2**: BullMQ job queue adapter — BullMQJobQueueAdapter, BullMQWorkerRegistry, InMemoryJobQueueAdapter, queue names constants (9 tests)
+- [x] **P7-T3**: Event handlers — AppointmentCreated/Confirmed/Cancelled handlers that enqueue email-dispatch and schedule 24h reminders (7 tests)
+- [x] **P7-T4**: Workers and wiring — email-dispatch processor (resolves user/doctor/clinic names), appointment-reminder processor (defensive status check), DI container wiring with event bus, graceful shutdown (8 tests)

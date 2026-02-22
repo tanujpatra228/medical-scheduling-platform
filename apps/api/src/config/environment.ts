@@ -13,6 +13,9 @@ const DEFAULT_DB_PASSWORD = "msp_password";
 const DEFAULT_DB_NAME = "msp_dev";
 const DEFAULT_REDIS_HOST = "localhost";
 const DEFAULT_REDIS_PORT = 6379;
+const DEFAULT_SMTP_HOST = "localhost";
+const DEFAULT_SMTP_PORT = 1025;
+const DEFAULT_SMTP_FROM = "noreply@msp.local";
 const DEFAULT_JWT_EXPIRES_IN = "15m";
 const DEFAULT_JWT_REFRESH_EXPIRES_IN = "7d";
 
@@ -48,6 +51,17 @@ const environmentSchema = z.object({
   JWT_SECRET: z.string().default("dev-secret-change-in-production"),
   JWT_EXPIRES_IN: z.string().default(DEFAULT_JWT_EXPIRES_IN),
   JWT_REFRESH_EXPIRES_IN: z.string().default(DEFAULT_JWT_REFRESH_EXPIRES_IN),
+
+  SMTP_HOST: z.string().default(DEFAULT_SMTP_HOST),
+  SMTP_PORT: z
+    .string()
+    .default(String(DEFAULT_SMTP_PORT))
+    .transform(Number)
+    .pipe(z.number().int().positive()),
+  SMTP_SECURE: z.string().default("false").transform((v) => v === "true"),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().default(DEFAULT_SMTP_FROM),
 });
 
 type Environment = z.infer<typeof environmentSchema>;
@@ -85,6 +99,14 @@ export interface JwtConfig {
   refreshExpiresIn: string;
 }
 
+export interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  auth?: { user: string; pass: string };
+  from: string;
+}
+
 export interface AppConfig {
   port: number;
   nodeEnv: string;
@@ -96,6 +118,7 @@ export interface AppConfig {
   database: DatabaseConfig;
   redis: RedisConfig;
   jwt: JwtConfig;
+  smtp: SmtpConfig;
 }
 
 export const config: Readonly<AppConfig> = Object.freeze({
@@ -121,5 +144,14 @@ export const config: Readonly<AppConfig> = Object.freeze({
     secret: environment.JWT_SECRET,
     expiresIn: environment.JWT_EXPIRES_IN,
     refreshExpiresIn: environment.JWT_REFRESH_EXPIRES_IN,
+  }),
+  smtp: Object.freeze({
+    host: environment.SMTP_HOST,
+    port: environment.SMTP_PORT,
+    secure: environment.SMTP_SECURE,
+    ...(environment.SMTP_USER && environment.SMTP_PASS
+      ? { auth: { user: environment.SMTP_USER, pass: environment.SMTP_PASS } }
+      : {}),
+    from: environment.SMTP_FROM,
   }),
 });

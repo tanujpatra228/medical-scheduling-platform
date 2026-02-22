@@ -8,9 +8,12 @@ export class TypeOrmUserRepository implements IUserRepository {
   constructor(private readonly ormRepository: Repository<UserEntity>) {}
 
   async findById(clinicId: string, id: string): Promise<User | null> {
-    const entity = await this.ormRepository.findOne({
-      where: { id, clinicId },
-    });
+    const where: Record<string, string> = { id };
+    if (clinicId) {
+      where.clinicId = clinicId;
+    }
+
+    const entity = await this.ormRepository.findOne({ where });
 
     return entity ? UserMapper.toDomain(entity) : null;
   }

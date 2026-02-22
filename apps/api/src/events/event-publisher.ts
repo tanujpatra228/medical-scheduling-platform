@@ -1,5 +1,6 @@
 import type { DomainEvent } from './domain-event';
 import type { TypedEventBus } from './event-bus';
+import type { IEventPublisherPort } from '@msp/application';
 
 /**
  * Port interface for publishing domain events.
@@ -22,7 +23,7 @@ export interface IEventPublisher {
  * For production distributed systems, replace with a Redis/BullMQ implementation
  * that implements the same IEventPublisher interface.
  */
-export class InProcessEventPublisher implements IEventPublisher {
+export class InProcessEventPublisher implements IEventPublisher, IEventPublisherPort {
   constructor(private readonly eventBus: TypedEventBus) {}
 
   async publish(event: DomainEvent): Promise<void> {

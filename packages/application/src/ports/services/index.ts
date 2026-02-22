@@ -52,3 +52,10 @@ export interface IEventBusPort {
     handler: (payload: Record<string, unknown>) => Promise<void>,
   ): void;
 }
+
+export interface IEventPublisherPort {
+  publish(event: {
+    eventType: string;
+    toPayload(): Record<string, unknown>;
+  }): Promise<void>;
+}

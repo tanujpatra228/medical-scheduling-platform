@@ -21,7 +21,14 @@ import {
   TypeOrmRefreshTokenRepository,
   Argon2PasswordHasher,
   JwtTokenProvider,
+  ConsoleEmailAdapter,
+  NodemailerEmailAdapter,
+  BullMQJobQueueAdapter,
+  BullMQWorkerRegistry,
+  InMemoryJobQueueAdapter,
+  QUEUE_NAMES,
 } from "@msp/infrastructure";
+import type { IEmailPort, IJobQueuePort, IEventPublisherPort } from "@msp/application";
 import {
   RegisterPatientUseCase,
   LoginUseCase,
@@ -45,10 +52,24 @@ import {
   FreeSlotCalculator,
 } from "@msp/application";
 import { config } from "./config/environment";
+import { TypedEventBus } from "./events/event-bus";
+import { InProcessEventPublisher, type IEventPublisher } from "./events/event-publisher";
+import {
+  AppointmentCreatedHandler,
+  AppointmentConfirmedHandler,
+  AppointmentCancelledHandler,
+} from "./events/handlers";
+import {
+  createEmailDispatchProcessor,
+  createReminderProcessor,
+} from "./workers";
 
 export interface Container {
   // Infrastructure
   dataSource: { destroy(): Promise<void> };
+  jobQueue: IJobQueuePort & { close?(): Promise<void> };
+  workerRegistry?: BullMQWorkerRegistry;
+  eventPublisher: IEventPublisherPort;
 
   // Auth
   tokenProvider: JwtTokenProvider;
@@ -113,12 +134,77 @@ export async function createContainer(): Promise<Container> {
   const passwordHasher = new Argon2PasswordHasher();
   const tokenProvider = new JwtTokenProvider(config.jwt);
 
-  // 4. Create calendar services
+  // 4. Create email adapter
+  let emailPort: IEmailPort;
+  if (config.isProduction) {
+    emailPort = new NodemailerEmailAdapter(config.smtp);
+  } else {
+    emailPort = new ConsoleEmailAdapter();
+  }
+
+  // 5. Create job queue adapter
+  let jobQueue: IJobQueuePort & { close?(): Promise<void> };
+  let workerRegistry: BullMQWorkerRegistry | undefined;
+
+  if (config.isTest) {
+    jobQueue = new InMemoryJobQueueAdapter();
+  } else {
+    const bullmqQueue = new BullMQJobQueueAdapter({
+      host: config.redis.host,
+      port: config.redis.port,
+    });
+    jobQueue = bullmqQueue;
+
+    // Create worker registry and register processors
+    workerRegistry = new BullMQWorkerRegistry({
+      host: config.redis.host,
+      port: config.redis.port,
+    });
+
+    workerRegistry.registerWorker(
+      QUEUE_NAMES.EMAIL_DISPATCH,
+      createEmailDispatchProcessor({
+        emailPort,
+        userRepository: userRepo,
+        patientRepository: patientRepo,
+        doctorRepository: doctorRepo,
+        clinicRepository: clinicRepo,
+      }),
+    );
+
+    workerRegistry.registerWorker(
+      QUEUE_NAMES.APPOINTMENT_REMINDERS,
+      createReminderProcessor({
+        appointmentRepository: appointmentRepo,
+        jobQueue: bullmqQueue,
+      }),
+    );
+  }
+
+  // 6. Create event bus and publisher
+  const eventBus = new TypedEventBus();
+  const eventPublisher = new InProcessEventPublisher(eventBus);
+
+  // Register event handlers
+  eventBus.register(
+    "APPOINTMENT_CREATED",
+    new AppointmentCreatedHandler(jobQueue),
+  );
+  eventBus.register(
+    "APPOINTMENT_CONFIRMED",
+    new AppointmentConfirmedHandler(jobQueue),
+  );
+  eventBus.register(
+    "APPOINTMENT_CANCELLED",
+    new AppointmentCancelledHandler(jobQueue),
+  );
+
+  // 7. Create calendar services
   const expander = new AvailabilityExpander(availabilityRuleRepo);
   const merger = new OverrideMerger(availabilityOverrideRepo);
   const calculator = new FreeSlotCalculator(appointmentRepo);
 
-  // 5. Create use cases with dependencies injected
+  // 8. Create use cases with dependencies injected
   const registerPatient = new RegisterPatientUseCase({
     userRepository: userRepo,
     patientRepository: patientRepo,
@@ -150,11 +236,11 @@ export async function createContainer(): Promise<Container> {
   const getPatientProfile = new GetPatientProfileUseCase(patientRepo);
   const updatePatientProfile = new UpdatePatientProfileUseCase(patientRepo);
 
-  // Appointment use cases
-  const createAppointment = new CreateAppointmentUseCase(appointmentRepo, doctorRepo, patientRepo);
-  const confirmAppointment = new ConfirmAppointmentUseCase(appointmentRepo);
-  const cancelAppointment = new CancelAppointmentUseCase(appointmentRepo);
-  const completeAppointment = new CompleteAppointmentUseCase(appointmentRepo);
+  // Appointment use cases (with event publisher)
+  const createAppointment = new CreateAppointmentUseCase(appointmentRepo, doctorRepo, patientRepo, eventPublisher);
+  const confirmAppointment = new ConfirmAppointmentUseCase(appointmentRepo, eventPublisher);
+  const cancelAppointment = new CancelAppointmentUseCase(appointmentRepo, eventPublisher);
+  const completeAppointment = new CompleteAppointmentUseCase(appointmentRepo, eventPublisher);
   const getAppointment = new GetAppointmentUseCase(appointmentRepo);
   const listAppointments = new ListAppointmentsUseCase(appointmentRepo);
 
@@ -163,6 +249,9 @@ export async function createContainer(): Promise<Container> {
 
   return {
     dataSource,
+    jobQueue,
+    workerRegistry,
+    eventPublisher,
     tokenProvider,
     passwordHasher,
     registerPatient,

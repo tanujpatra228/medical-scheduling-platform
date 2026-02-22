@@ -2,6 +2,7 @@ import { Appointment, TimeSlot } from "@msp/domain";
 import { IAppointmentRepository } from "../../ports/repositories/appointment.repository.port";
 import { IDoctorRepository } from "../../ports/repositories/doctor.repository.port";
 import { IPatientRepository } from "../../ports/repositories/patient.repository.port";
+import { IEventPublisherPort } from "../../ports/services";
 import {
   BookAppointmentDTO,
   AppointmentResponseDTO,
@@ -34,6 +35,7 @@ export class CreateAppointmentUseCase {
     private readonly appointmentRepo: IAppointmentRepository,
     private readonly doctorRepo: IDoctorRepository,
     private readonly patientRepo: IPatientRepository,
+    private readonly eventPublisher?: IEventPublisherPort,
   ) {}
 
   async execute(dto: BookAppointmentDTO): Promise<AppointmentResponseDTO> {
@@ -71,6 +73,13 @@ export class CreateAppointmentUseCase {
     });
 
     const saved = await this.appointmentRepo.save(appointment);
+
+    if (this.eventPublisher) {
+      for (const event of saved.pullDomainEvents()) {
+        await this.eventPublisher.publish(event);
+      }
+    }
+
     return toAppointmentResponseDTO(saved);
   }
 }

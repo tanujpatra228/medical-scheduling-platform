@@ -23,6 +23,7 @@ function createTestDomainEvent(
     eventType,
     occurredAt: new Date(),
     aggregateId,
+    toPayload: () => ({ eventType, aggregateId }),
   };
 }
 

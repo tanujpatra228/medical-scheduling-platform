@@ -17,6 +17,7 @@ function createTestEvent(
     eventType,
     occurredAt: new Date(),
     aggregateId,
+    toPayload: () => ({ eventType, aggregateId }),
   };
 }
 

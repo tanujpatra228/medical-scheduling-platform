@@ -25,6 +25,14 @@ async function main(): Promise<void> {
     console.log(`[API] ${signal} received. Shutting down gracefully...`);
     server.close(async () => {
       if (container) {
+        if (container.workerRegistry) {
+          await container.workerRegistry.closeAll();
+          console.log("[API] Worker registry closed.");
+        }
+        if (container.jobQueue.close) {
+          await container.jobQueue.close();
+          console.log("[API] Job queue closed.");
+        }
         await container.dataSource.destroy();
         console.log("[API] Database connection closed.");
       }
