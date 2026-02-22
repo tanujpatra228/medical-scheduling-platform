@@ -1,4 +1,6 @@
 import { API_BASE_URL } from "@/lib/constants";
+import { store } from "@/store";
+import { clearCredentials, setCredentials } from "@/store/auth.slice";
 
 export class ApiError extends Error {
   status: number;
@@ -14,24 +16,11 @@ export class ApiError extends Error {
   }
 }
 
-type TokenStore = {
-  getAccessToken: () => string | null;
-  getRefreshToken: () => string | null;
-  setTokens: (access: string, refresh: string) => void;
-  clearTokens: () => void;
-};
-
-let tokenStore: TokenStore | null = null;
-
-export function setTokenStore(store: TokenStore) {
-  tokenStore = store;
-}
-
 // Mutex to prevent concurrent refresh attempts
 let refreshPromise: Promise<boolean> | null = null;
 
 async function doRefreshAccessToken(): Promise<boolean> {
-  const refreshToken = tokenStore?.getRefreshToken();
+  const { refreshToken } = store.getState().auth;
   if (!refreshToken) return false;
 
   try {
@@ -52,7 +41,16 @@ async function doRefreshAccessToken(): Promise<boolean> {
 
     const data = json as { success?: boolean; data?: { accessToken: string; refreshToken: string } };
     if (data.success && data.data) {
-      tokenStore?.setTokens(data.data.accessToken, data.data.refreshToken);
+      const { user } = store.getState().auth;
+      if (user) {
+        store.dispatch(
+          setCredentials({
+            user,
+            accessToken: data.data.accessToken,
+            refreshToken: data.data.refreshToken,
+          }),
+        );
+      }
       return true;
     }
     return false;
@@ -80,7 +78,7 @@ export async function apiRequest<T>(
     ...(options.headers as Record<string, string>),
   };
 
-  const accessToken = tokenStore?.getAccessToken();
+  const { accessToken } = store.getState().auth;
   if (accessToken) {
     headers["Authorization"] = `Bearer ${accessToken}`;
   }
@@ -88,16 +86,16 @@ export async function apiRequest<T>(
   let res = await fetch(url, { ...options, headers });
 
   // Auto-refresh on 401
-  if (res.status === 401 && tokenStore) {
+  if (res.status === 401) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
-      const newToken = tokenStore.getAccessToken();
+      const newToken = store.getState().auth.accessToken;
       if (newToken) {
         headers["Authorization"] = `Bearer ${newToken}`;
       }
       res = await fetch(url, { ...options, headers });
     } else {
-      tokenStore.clearTokens();
+      store.dispatch(clearCredentials());
     }
   }
 
