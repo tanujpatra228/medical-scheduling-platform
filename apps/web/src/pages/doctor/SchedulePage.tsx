@@ -1,40 +1,98 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, addDays, startOfWeek, endOfWeek } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { DataTable } from "@/components/common/DataTable";
 import { useAppointments } from "@/hooks/use-appointments";
+import type { Appointment } from "@/types/api.types";
+
+const DEFAULT_PAGE_SIZE = 20;
+const DAYS_IN_WEEK = 7;
+
+function formatTimeRange(startsAt: string, endsAt: string): string {
+  return `${format(new Date(startsAt), "HH:mm")} \u2013 ${format(new Date(endsAt), "HH:mm")}`;
+}
 
 export function DoctorSchedulePage() {
   const navigate = useNavigate();
+
   const [weekStart, setWeekStart] = useState(() =>
     startOfWeek(new Date(), { weekStartsOn: 1 }),
   );
-
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
+
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
 
   const { data, isLoading } = useAppointments({
     fromDate: weekStart.toISOString(),
     toDate: weekEnd.toISOString(),
-    limit: 100,
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
   });
 
   const appointments = data?.data ?? [];
+  const meta = data?.meta;
+  const pageCount = meta?.totalPages ?? 0;
 
-  // Group by day
-  const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  const aptsByDay = new Map<string, typeof appointments>();
-  for (const apt of appointments) {
-    const key = format(new Date(apt.startsAt), "yyyy-MM-dd");
-    if (!aptsByDay.has(key)) aptsByDay.set(key, []);
-    aptsByDay.get(key)!.push(apt);
-  }
+  const navigateToPreviousWeek = () => {
+    setWeekStart((d) => addDays(d, -DAYS_IN_WEEK));
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  };
+
+  const navigateToNextWeek = () => {
+    setWeekStart((d) => addDays(d, DAYS_IN_WEEK));
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  };
+
+  const columns = useMemo<ColumnDef<Appointment, unknown>[]>(
+    () => [
+      {
+        id: "day",
+        header: "Day",
+        cell: ({ row }) =>
+          format(new Date(row.original.startsAt), "EEE, MMM d"),
+      },
+      {
+        id: "time",
+        header: "Time",
+        cell: ({ row }) =>
+          formatTimeRange(row.original.startsAt, row.original.endsAt),
+      },
+      {
+        accessorKey: "patientId",
+        header: "Patient",
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <AppointmentStatusBadge status={row.original.status} />
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              navigate(`/doctor/appointments/${row.original.id}`)
+            }
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [navigate],
+  );
 
   return (
     <div className="space-y-6">
@@ -44,84 +102,33 @@ export function DoctorSchedulePage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setWeekStart((d) => addDays(d, -7))}
+            onClick={navigateToPreviousWeek}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm font-medium">
-            {format(weekStart, "MMM d")} – {format(weekEnd, "MMM d, yyyy")}
+            {format(weekStart, "MMM d")} &ndash;{" "}
+            {format(weekEnd, "MMM d, yyyy")}
           </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setWeekStart((d) => addDays(d, 7))}
+            onClick={navigateToNextWeek}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <div className="grid grid-cols-7 gap-3">
-          {days.map((day) => {
-            const key = format(day, "yyyy-MM-dd");
-            const dayApts = (aptsByDay.get(key) ?? []).sort((a, b) =>
-              a.startsAt.localeCompare(b.startsAt),
-            );
-            const isToday =
-              format(day, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-
-            return (
-              <div key={key} className="space-y-2">
-                <div
-                  className={`rounded-md p-2 text-center ${
-                    isToday ? "bg-primary/10" : ""
-                  }`}
-                >
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {format(day, "EEE")}
-                  </p>
-                  <p
-                    className={`text-sm font-semibold ${
-                      isToday ? "text-primary" : ""
-                    }`}
-                  >
-                    {format(day, "d")}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  {dayApts.length === 0 ? (
-                    <p className="py-2 text-center text-xs text-muted-foreground">
-                      —
-                    </p>
-                  ) : (
-                    dayApts.map((apt) => (
-                      <Card
-                        key={apt.id}
-                        className="cursor-pointer hover:shadow-sm"
-                        onClick={() =>
-                          navigate(`/doctor/appointments/${apt.id}`)
-                        }
-                      >
-                        <CardContent className="p-2">
-                          <p className="text-xs font-medium">
-                            {format(new Date(apt.startsAt), "HH:mm")}
-                          </p>
-                          <AppointmentStatusBadge status={apt.status} />
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={appointments}
+        pageCount={pageCount}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        isLoading={isLoading}
+        emptyMessage="No appointments scheduled for this week."
+      />
     </div>
   );
 }

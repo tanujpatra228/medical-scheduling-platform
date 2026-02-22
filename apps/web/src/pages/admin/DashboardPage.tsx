@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { format, startOfDay, endOfDay } from "date-fns";
+import { type PaginationState } from "@tanstack/react-table";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppointments } from "@/hooks/use-appointments";
 import { useDoctors } from "@/hooks/use-doctors";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { DataTable, type ColumnDef } from "@/components/common/DataTable";
 import {
   Card,
   CardContent,
@@ -10,6 +13,39 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
+import type { Appointment, AppointmentStatus } from "@/types/api.types";
+
+const appointmentColumns: ColumnDef<Appointment, unknown>[] = [
+  {
+    accessorKey: "patientId",
+    header: "Patient",
+  },
+  {
+    accessorKey: "doctorId",
+    header: "Doctor",
+  },
+  {
+    accessorKey: "startsAt",
+    header: "Date",
+    cell: ({ getValue }) => format(new Date(getValue<string>()), "MMM d, yyyy"),
+  },
+  {
+    id: "time",
+    header: "Time",
+    cell: ({ row }) => {
+      const startsAt = new Date(row.original.startsAt);
+      const endsAt = new Date(row.original.endsAt);
+      return `${format(startsAt, "HH:mm")} \u2013 ${format(endsAt, "HH:mm")}`;
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ getValue }) => (
+      <AppointmentStatusBadge status={getValue<AppointmentStatus>()} />
+    ),
+  },
+];
 
 export function AdminDashboardPage() {
   const { user } = useAuth();
@@ -30,6 +66,20 @@ export function AdminDashboardPage() {
   const completed = appointments.filter((a) => a.status === "COMPLETED").length;
 
   const isLoading = aptsLoading || docsLoading;
+
+  // Recent appointments table with its own pagination
+  const [recentPagination, setRecentPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const { data: recentData, isLoading: recentLoading } = useAppointments({
+    page: recentPagination.pageIndex + 1,
+    limit: recentPagination.pageSize,
+  });
+
+  const recentAppointments = recentData?.data ?? [];
+  const recentMeta = recentData?.meta;
 
   return (
     <div className="space-y-8">
@@ -91,47 +141,20 @@ export function AdminDashboardPage() {
             </Card>
           </div>
 
-          {/* Recent activity */}
+          {/* Recent Appointments */}
           <section>
             <h2 className="mb-4 text-lg font-semibold">
-              Today's Activity
+              Recent Appointments
             </h2>
-            {appointments.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground">
-                No appointments today.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {appointments
-                  .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-                  .slice(0, 10)
-                  .map((apt) => {
-                    const doc = doctors.find((d) => d.id === apt.doctorId);
-                    return (
-                      <Card key={apt.id}>
-                        <CardContent className="flex items-center justify-between py-3">
-                          <div className="flex items-center gap-4">
-                            <span className="text-sm font-medium">
-                              {format(new Date(apt.startsAt), "HH:mm")}
-                            </span>
-                            {doc && (
-                              <span className="text-sm text-muted-foreground">
-                                Dr. {doc.user.lastName}
-                              </span>
-                            )}
-                            <AppointmentStatusBadge status={apt.status} />
-                          </div>
-                          {apt.reason && (
-                            <span className="text-sm text-muted-foreground">
-                              {apt.reason}
-                            </span>
-                          )}
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-              </div>
-            )}
+            <DataTable
+              columns={appointmentColumns}
+              data={recentAppointments}
+              pageCount={recentMeta?.totalPages ?? 0}
+              pagination={recentPagination}
+              onPaginationChange={setRecentPagination}
+              isLoading={recentLoading}
+              emptyMessage="No appointments found."
+            />
           </section>
         </>
       )}

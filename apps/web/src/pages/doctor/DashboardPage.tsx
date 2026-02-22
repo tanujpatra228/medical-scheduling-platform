@@ -1,9 +1,11 @@
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format, startOfDay, endOfDay } from "date-fns";
+import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppointments } from "@/hooks/use-appointments";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { DataTable } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,25 +13,76 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import type { Appointment } from "@/types/api.types";
+
+const DEFAULT_PAGE_SIZE = 20;
+
+function formatTimeRange(startsAt: string, endsAt: string): string {
+  return `${format(new Date(startsAt), "HH:mm")} \u2013 ${format(new Date(endsAt), "HH:mm")}`;
+}
 
 export function DoctorDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-
   const today = new Date();
+
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: DEFAULT_PAGE_SIZE,
+  });
+
   const { data, isLoading } = useAppointments({
     fromDate: startOfDay(today).toISOString(),
     toDate: endOfDay(today).toISOString(),
-    limit: 50,
+    page: pagination.pageIndex + 1,
+    limit: pagination.pageSize,
   });
 
-  const appointments = (data?.data ?? []).sort((a, b) =>
-    a.startsAt.localeCompare(b.startsAt),
-  );
+  const appointments = data?.data ?? [];
+  const meta = data?.meta;
+  const pageCount = meta?.totalPages ?? 0;
 
   const pending = appointments.filter((a) => a.status === "PENDING");
   const confirmed = appointments.filter((a) => a.status === "CONFIRMED");
   const completed = appointments.filter((a) => a.status === "COMPLETED");
+
+  const columns = useMemo<ColumnDef<Appointment, unknown>[]>(
+    () => [
+      {
+        accessorKey: "patientId",
+        header: "Patient",
+      },
+      {
+        id: "time",
+        header: "Time",
+        cell: ({ row }) =>
+          formatTimeRange(row.original.startsAt, row.original.endsAt),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        cell: ({ row }) => (
+          <AppointmentStatusBadge status={row.original.status} />
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              navigate(`/doctor/appointments/${row.original.id}`)
+            }
+          >
+            View
+          </Button>
+        ),
+      },
+    ],
+    [navigate],
+  );
 
   return (
     <div className="space-y-8">
@@ -79,48 +132,17 @@ export function DoctorDashboardPage() {
       {/* Today's Appointments */}
       <section>
         <h2 className="mb-4 text-lg font-semibold">
-          Today's Appointments ({appointments.length})
+          Today&apos;s Appointments
         </h2>
-
-        {isLoading ? (
-          <div className="flex justify-center py-8">
-            <LoadingSpinner />
-          </div>
-        ) : appointments.length === 0 ? (
-          <p className="py-8 text-center text-muted-foreground">
-            No appointments scheduled for today.
-          </p>
-        ) : (
-          <div className="space-y-2">
-            {appointments.map((apt) => (
-              <Card key={apt.id}>
-                <CardContent className="flex items-center justify-between py-3">
-                  <div className="flex items-center gap-4">
-                    <div className="text-sm font-medium">
-                      {format(new Date(apt.startsAt), "HH:mm")} –{" "}
-                      {format(new Date(apt.endsAt), "HH:mm")}
-                    </div>
-                    <AppointmentStatusBadge status={apt.status} />
-                    {apt.reason && (
-                      <span className="text-sm text-muted-foreground">
-                        {apt.reason}
-                      </span>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      navigate(`/doctor/appointments/${apt.id}`)
-                    }
-                  >
-                    View
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+        <DataTable
+          columns={columns}
+          data={appointments}
+          pageCount={pageCount}
+          pagination={pagination}
+          onPaginationChange={setPagination}
+          isLoading={isLoading}
+          emptyMessage="No appointments scheduled for today."
+        />
       </section>
     </div>
   );

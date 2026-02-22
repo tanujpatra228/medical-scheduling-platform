@@ -1,19 +1,45 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { type PaginationState } from "@tanstack/react-table";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { DataTable, type ColumnDef } from "@/components/common/DataTable";
 import { useDoctors } from "@/hooks/use-doctors";
+import type { Doctor } from "@/types/api.types";
+
+const columns: ColumnDef<Doctor, unknown>[] = [
+  {
+    accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
+    id: "name",
+    header: "Name",
+  },
+  {
+    accessorFn: (row) => row.user.email,
+    id: "email",
+    header: "Email",
+  },
+  {
+    accessorKey: "specialization",
+    header: "Specialization",
+  },
+  {
+    accessorKey: "slotDurationMin",
+    header: "Slot Duration",
+    cell: ({ getValue }) => `${getValue<number>()} min`,
+  },
+];
 
 export function AdminDoctorsPage() {
   const navigate = useNavigate();
-  const [page, setPage] = useState(1);
-  const { data, isLoading } = useDoctors(page, 20);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 20,
+  });
+
+  const { data, isLoading } = useDoctors(
+    pagination.pageIndex + 1,
+    pagination.pageSize
+  );
 
   const doctors = data?.data ?? [];
   const meta = data?.meta;
@@ -28,62 +54,15 @@ export function AdminDoctorsPage() {
         </Button>
       </div>
 
-      {isLoading ? (
-        <div className="flex justify-center py-8">
-          <LoadingSpinner />
-        </div>
-      ) : doctors.length === 0 ? (
-        <p className="py-8 text-center text-muted-foreground">
-          No doctors registered yet.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {doctors.map((doc) => (
-            <Card key={doc.id}>
-              <CardContent className="flex items-center justify-between py-4">
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    Dr. {doc.user.firstName} {doc.user.lastName}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {doc.user.email}
-                  </p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Badge variant="secondary">{doc.specialization}</Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {doc.slotDurationMin} min slots
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {meta && meta.totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-              >
-                Previous
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                Page {page} of {meta.totalPages}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={page >= meta.totalPages}
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+      <DataTable
+        columns={columns}
+        data={doctors}
+        pageCount={meta?.totalPages ?? 0}
+        pagination={pagination}
+        onPaginationChange={setPagination}
+        isLoading={isLoading}
+        emptyMessage="No doctors registered yet."
+      />
     </div>
   );
 }
