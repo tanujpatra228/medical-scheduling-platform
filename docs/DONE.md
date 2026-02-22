@@ -44,3 +44,6 @@
 - [x] **P6-T1**: CreateAppointment use case with double-booking guard (5 tests)
 - [x] **P6-T2**: Appointment management use cases - confirm, cancel, complete, get, list (8 tests)
 - [x] **P6-T3**: Booking API routes with validation and RBAC (18 tests)
+
+## Phase 4 (continued): API Documentation
+- [x] **P4-T7**: Swagger/OpenAPI 3.1.0 documentation — full spec for all 18 endpoints with Swagger UI at `/api-docs` (non-production only)

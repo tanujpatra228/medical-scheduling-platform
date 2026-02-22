@@ -5,6 +5,7 @@ import { notFoundHandler } from "./middleware/not-found";
 import { globalErrorHandler } from "./middleware/error-handler";
 import { registerRoutes } from "./routes";
 import type { Container } from "./container";
+import { openApiSpec } from "./swagger";
 
 const MAX_REQUEST_BODY_SIZE = "10kb";
 
@@ -16,6 +17,12 @@ export function createApp(container?: Container): Express {
   app.use(requestIdMiddleware);
 
   app.use(config.apiPrefix, registerRoutes(container));
+
+  if (!config.isProduction) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const swaggerUi = require("swagger-ui-express") as typeof import("swagger-ui-express");
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(openApiSpec));
+  }
 
   app.use(notFoundHandler);
   // Express 5 types require explicit cast for error handlers (4-arg middleware)
