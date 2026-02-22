@@ -28,7 +28,7 @@ import {
   InMemoryJobQueueAdapter,
   QUEUE_NAMES,
 } from "@msp/infrastructure";
-import type { IEmailPort, IJobQueuePort, IEventPublisherPort } from "@msp/application";
+import type { IEmailPort, IJobQueuePort, IEventPublisherPort, IPatientRepository } from "@msp/application";
 import {
   RegisterPatientUseCase,
   LoginUseCase,
@@ -92,6 +92,9 @@ export interface Container {
   // Use Cases - Patient
   getPatientProfile: GetPatientProfileUseCase;
   updatePatientProfile: UpdatePatientProfileUseCase;
+
+  // Repositories (exposed for controllers that need direct repo access)
+  patientRepo: IPatientRepository;
 
   // Use Cases - Appointment
   createAppointment: CreateAppointmentUseCase;
@@ -254,6 +257,7 @@ export async function createContainer(): Promise<Container> {
     eventPublisher,
     tokenProvider,
     passwordHasher,
+    patientRepo,
     registerPatient,
     login,
     refreshToken,

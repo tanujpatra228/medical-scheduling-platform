@@ -17,13 +17,11 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { useDoctors } from "@/hooks/use-doctors";
 import { useBookAppointment } from "@/hooks/use-appointments";
 import type { Doctor, Slot } from "@/types/api.types";
-import { useAuth } from "@/hooks/use-auth";
 
 type Step = "doctor" | "slot" | "confirm";
 
 export function BookAppointmentPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { data: docsData, isLoading: docsLoading } = useDoctors(1, 100);
   const bookMutation = useBookAppointment();
 
@@ -46,14 +44,10 @@ export function BookAppointmentPage() {
   }
 
   async function handleConfirm() {
-    if (!selectedDoctor || !selectedSlot || !user) return;
+    if (!selectedDoctor || !selectedSlot) return;
 
-    // We need patientId. The user.id is the userId, not patientId.
-    // The API needs patientId. For now, use user.id as a placeholder —
-    // the backend resolves based on auth context.
     await bookMutation.mutateAsync({
       doctorId: selectedDoctor.id,
-      patientId: user.id,
       startsAt: selectedSlot.startsAt,
       endsAt: selectedSlot.endsAt,
       reason: reason || undefined,

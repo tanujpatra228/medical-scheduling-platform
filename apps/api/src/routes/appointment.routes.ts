@@ -6,7 +6,7 @@ import { AppointmentController } from "../controllers/appointment.controller";
 
 const bookAppointmentSchema = z.object({
   doctorId: z.string().uuid(),
-  patientId: z.string().uuid(),
+  patientId: z.string().uuid().optional(),
   startsAt: z.coerce.date(),
   endsAt: z.coerce.date(),
   reason: z.string().max(500).optional(),

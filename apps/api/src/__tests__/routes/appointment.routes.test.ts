@@ -59,6 +59,7 @@ function createTestApp(
   app.use(express.json());
   app.use(createMockAuth(role));
 
+  const mockPatientRepo = { findByUserId: vi.fn(), findById: vi.fn(), findByInsuranceNumber: vi.fn(), create: vi.fn(), update: vi.fn(), findByClinicId: vi.fn() };
   const controller = new AppointmentController(
     useCases.create as any,
     useCases.confirm as any,
@@ -66,6 +67,7 @@ function createTestApp(
     useCases.complete as any,
     useCases.get as any,
     useCases.list as any,
+    mockPatientRepo as any,
   );
   app.use(createAppointmentRouter(controller));
   app.use(globalErrorHandler as unknown as RequestHandler);

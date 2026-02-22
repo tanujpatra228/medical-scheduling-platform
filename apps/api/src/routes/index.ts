@@ -52,6 +52,7 @@ export function registerRoutes(container?: Container): Router {
       container.completeAppointment,
       container.getAppointment,
       container.listAppointments,
+      container.patientRepo,
     );
     const availabilityController = new AvailabilityController(
       container.getAvailableSlots,

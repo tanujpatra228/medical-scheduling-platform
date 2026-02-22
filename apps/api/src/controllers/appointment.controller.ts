@@ -11,6 +11,7 @@ import {
 import type {
   BookAppointmentDTO,
   AppointmentListFiltersDTO,
+  IPatientRepository,
 } from "@msp/application";
 
 interface ListQueryParams {
@@ -35,14 +36,35 @@ export class AppointmentController {
     private readonly completeAppointmentUseCase: CompleteAppointmentUseCase,
     private readonly getAppointmentUseCase: GetAppointmentUseCase,
     private readonly listAppointmentsUseCase: ListAppointmentsUseCase,
+    private readonly patientRepository: IPatientRepository,
   ) {}
 
   create: RequestHandler = async (req, res, next) => {
     try {
       const body = req.validatedBody as Omit<BookAppointmentDTO, "clinicId">;
+      const clinicId = req.user!.clinicId;
+
+      let patientId = body.patientId;
+      if (!patientId) {
+        // Resolve patientId from authenticated user
+        const patient = await this.patientRepository.findByUserId(
+          clinicId,
+          req.user!.userId,
+        );
+        if (!patient) {
+          res.status(StatusCodes.BAD_REQUEST).json({
+            success: false,
+            error: { code: "PATIENT_NOT_FOUND", message: "Patient profile not found for current user" },
+          });
+          return;
+        }
+        patientId = patient.id;
+      }
+
       const result = await this.createAppointmentUseCase.execute({
         ...body,
-        clinicId: req.user!.clinicId,
+        patientId,
+        clinicId,
       });
       res.status(StatusCodes.CREATED).json({ success: true, data: result });
     } catch (error) {

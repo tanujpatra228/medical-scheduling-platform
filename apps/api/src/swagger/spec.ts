@@ -506,7 +506,7 @@ export const openApiSpec = {
           required: true,
           content: jsonContent({
             type: "object",
-            required: ["doctorId", "patientId", "startsAt", "endsAt"],
+            required: ["doctorId", "startsAt", "endsAt"],
             properties: {
               doctorId: { type: "string", format: UUID_FORMAT },
               patientId: { type: "string", format: UUID_FORMAT },

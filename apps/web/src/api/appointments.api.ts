@@ -36,7 +36,7 @@ export function getAppointment(id: string) {
 
 interface CreateAppointmentParams {
   doctorId: string;
-  patientId: string;
+  patientId?: string;
   startsAt: string;
   endsAt: string;
   reason?: string;
