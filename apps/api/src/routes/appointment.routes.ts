@@ -17,7 +17,7 @@ const cancelSchema = z.object({
 });
 
 const listQuerySchema = z.object({
-  status: z.string().optional(),
+  status: z.enum(["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"]).optional(),
   doctorId: z.string().uuid().optional(),
   patientId: z.string().uuid().optional(),
   fromDate: z.coerce.date().optional(),

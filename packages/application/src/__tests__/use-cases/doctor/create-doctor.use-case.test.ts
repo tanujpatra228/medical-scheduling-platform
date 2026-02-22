@@ -12,6 +12,7 @@ function createMockUserRepo(
   return {
     findById: vi.fn(),
     findByEmail: vi.fn().mockResolvedValue(null),
+    findAllByEmail: vi.fn().mockResolvedValue([]),
     save: vi.fn().mockImplementation((user) => Promise.resolve(user)),
     update: vi.fn(),
     ...overrides,

@@ -61,6 +61,7 @@ describe("ListDoctorsUseCase", () => {
         return Promise.resolve(null);
       }),
       findByEmail: vi.fn(),
+      findAllByEmail: vi.fn(),
       save: vi.fn(),
       update: vi.fn(),
     };
@@ -99,6 +100,7 @@ describe("ListDoctorsUseCase", () => {
     const userRepo: IUserRepository = {
       findById: vi.fn(),
       findByEmail: vi.fn(),
+      findAllByEmail: vi.fn(),
       save: vi.fn(),
       update: vi.fn(),
     };

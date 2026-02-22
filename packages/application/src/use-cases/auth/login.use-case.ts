@@ -36,10 +36,14 @@ export class LoginUseCase {
   }
 
   async execute(dto: LoginDTO): Promise<AuthResponseDTO> {
-    const user = await this.userRepository.findByEmail(
-      dto.clinicId,
-      dto.email,
-    );
+    let user;
+
+    if (dto.clinicId) {
+      user = await this.userRepository.findByEmail(dto.clinicId, dto.email);
+    } else {
+      const matches = await this.userRepository.findAllByEmail(dto.email);
+      user = matches.length === 1 ? matches[0] : null;
+    }
 
     if (!user || !user.isActive) {
       throw new InvalidCredentialsError();

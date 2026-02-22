@@ -1,5 +1,5 @@
 export interface LoginDTO {
-  readonly clinicId: string;
+  readonly clinicId?: string;
   readonly email: string;
   readonly password: string;
 }

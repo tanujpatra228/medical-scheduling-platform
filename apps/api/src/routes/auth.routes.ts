@@ -19,7 +19,7 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-  clinicId: z.string().uuid(),
+  clinicId: z.string().uuid().optional(),
   email: z.string().email(),
   password: z.string().min(1),
 });

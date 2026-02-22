@@ -282,7 +282,7 @@ export const openApiSpec = {
           required: true,
           content: jsonContent({
             type: "object",
-            required: ["clinicId", "email", "password"],
+            required: ["email", "password"],
             properties: {
               clinicId: { type: "string", format: UUID_FORMAT },
               email: { type: "string", format: EMAIL_FORMAT },

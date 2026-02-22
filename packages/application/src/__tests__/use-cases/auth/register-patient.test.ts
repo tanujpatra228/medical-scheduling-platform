@@ -22,6 +22,7 @@ function createMockUserRepository(): IUserRepository {
   return {
     findById: vi.fn().mockResolvedValue(null),
     findByEmail: vi.fn().mockResolvedValue(null),
+    findAllByEmail: vi.fn().mockResolvedValue([]),
     save: vi.fn().mockImplementation((user: User) => Promise.resolve(user)),
     update: vi.fn().mockImplementation((user: User) => Promise.resolve(user)),
   };

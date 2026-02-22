@@ -12,8 +12,10 @@ const MAX_REQUEST_BODY_SIZE = "10kb";
 export function createApp(container?: Container): Express {
   const app = express();
 
-  app.use(express.json({ limit: MAX_REQUEST_BODY_SIZE }));
+  // CORS must be the very first middleware so that CORS headers are always
+  // set before any other middleware (e.g. body parser) can reject the request.
   app.use(corsMiddleware);
+  app.use(express.json({ limit: MAX_REQUEST_BODY_SIZE }));
   app.use(requestIdMiddleware);
 
   app.use(config.apiPrefix, registerRoutes(container));

@@ -43,6 +43,7 @@ describe("createEmailDispatchProcessor", () => {
       userRepository: {
         findById: vi.fn().mockResolvedValue(createMockUser()),
         findByEmail: vi.fn(),
+        findAllByEmail: vi.fn(),
         save: vi.fn(),
         update: vi.fn(),
       },

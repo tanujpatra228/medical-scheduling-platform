@@ -200,13 +200,13 @@ describe("Appointment Routes", () => {
 
       const app = createTestApp(useCases);
       await request(app).get(
-        `/appointments?status=SCHEDULED&doctorId=${DOCTOR_ID}&page=1&limit=10`,
+        `/appointments?status=PENDING&doctorId=${DOCTOR_ID}&page=1&limit=10`,
       );
 
       expect(useCases.list.execute).toHaveBeenCalledWith(
         CLINIC_ID,
         expect.objectContaining({
-          status: "SCHEDULED",
+          status: "PENDING",
           doctorId: DOCTOR_ID,
         }),
         { page: 1, limit: 10 },

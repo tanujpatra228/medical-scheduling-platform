@@ -26,6 +26,14 @@ export class TypeOrmUserRepository implements IUserRepository {
     return entity ? UserMapper.toDomain(entity) : null;
   }
 
+  async findAllByEmail(email: string): Promise<User[]> {
+    const entities = await this.ormRepository.find({
+      where: { email },
+    });
+
+    return entities.map(UserMapper.toDomain);
+  }
+
   async save(user: User): Promise<User> {
     const ormData = UserMapper.toOrm(user);
     const savedEntity = await this.ormRepository.save(ormData);
