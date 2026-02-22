@@ -26,6 +26,7 @@
     "compilerOptions": {
       "module": "CommonJS"
     },
-    "transpileOnly": true
+    "transpileOnly": true,
+    "files": true
   }
 }

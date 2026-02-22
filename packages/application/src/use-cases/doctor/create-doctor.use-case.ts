@@ -1,6 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { User, Doctor, Email } from "@msp/domain";
 import { UserRole } from "@msp/shared";
-import { v4 as uuidv4 } from "uuid";
 import { IUserRepository } from "../../ports/repositories/user.repository.port";
 import { IDoctorRepository } from "../../ports/repositories/doctor.repository.port";
 import { IPasswordHasherPort } from "../../ports/services";
@@ -37,8 +37,8 @@ export class CreateDoctorUseCase {
 
     const passwordHash = await this.passwordHasher.hash(dto.password);
     const now = new Date();
-    const userId = uuidv4();
-    const doctorId = uuidv4();
+    const userId = randomUUID();
+    const doctorId = randomUUID();
 
     const user = new User({
       id: userId,

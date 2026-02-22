@@ -159,13 +159,7 @@ importers:
       '@msp/shared':
         specifier: workspace:*
         version: link:../shared
-      uuid:
-        specifier: ^13.0.0
-        version: 13.0.0
     devDependencies:
-      '@types/uuid':
-        specifier: ^11.0.0
-        version: 11.0.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
