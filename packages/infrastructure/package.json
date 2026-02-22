@@ -8,7 +8,9 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' -r tsconfig-paths/register --files src/database/seeds/run-seed.ts",
+    "reset:db": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' -r tsconfig-paths/register --files src/database/seeds/run-reset.ts"
   },
   "dependencies": {
     "@msp/application": "workspace:*",
@@ -27,6 +29,8 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/nodemailer": "^7.0.11",
     "@types/uuid": "^11.0.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

@@ -16,13 +16,19 @@ async function main(): Promise<void> {
 
   try {
     await dataSource.initialize();
-    console.log("Database connected. Synchronizing schema...");
+
+    console.log("Dropping all tables...");
+    await dataSource.dropDatabase();
+
+    console.log("Recreating schema from entities...");
     await dataSource.synchronize();
-    console.log("Schema synchronized. Running seed...");
+
+    console.log("Running seed...");
     await seedDevelopmentData(dataSource);
-    console.log("Seed completed!");
+
+    console.log("Database reset complete!");
   } catch (error) {
-    console.error("Seed failed:", error);
+    console.error("Database reset failed:", error);
     process.exitCode = 1;
   } finally {
     if (dataSource.isInitialized) {
