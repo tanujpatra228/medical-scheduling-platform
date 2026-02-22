@@ -17,16 +17,7 @@
 - [ ] **P8-T2**: Calendar sync service
 - [ ] **P8-T3**: Two-way appointment sync
 
-### Phase 9: Frontend (React/Next.js)
-- [ ] **P9-T1**: Project setup (Next.js, Tailwind, shadcn/ui)
-- [ ] **P9-T2**: Auth pages (login, register)
-- [ ] **P9-T3**: Dashboard layout
-- [ ] **P9-T4**: Doctor schedule management
-- [ ] **P9-T5**: Patient booking flow
-- [ ] **P9-T6**: Appointment management views
-
 ### Phase 10: Testing & Polish
-- [ ] **P10-T1**: E2E tests with Playwright
 - [ ] **P10-T2**: Performance optimization
 - [ ] **P10-T3**: Security audit
 - [ ] **P10-T4**: Deployment configuration

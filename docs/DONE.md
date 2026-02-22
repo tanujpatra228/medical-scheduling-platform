@@ -54,3 +54,14 @@
 - [x] **P7-T2**: BullMQ job queue adapter — BullMQJobQueueAdapter, BullMQWorkerRegistry, InMemoryJobQueueAdapter, queue names constants (9 tests)
 - [x] **P7-T3**: Event handlers — AppointmentCreated/Confirmed/Cancelled handlers that enqueue email-dispatch and schedule 24h reminders (7 tests)
 - [x] **P7-T4**: Workers and wiring — email-dispatch processor (resolves user/doctor/clinic names), appointment-reminder processor (defensive status check), DI container wiring with event bus, graceful shutdown (8 tests)
+
+## Phase 9: Frontend (React + Vite)
+- [x] **P9-T1**: Project setup (Vite, React 19, Tailwind 4, shadcn/ui, Redux Toolkit)
+- [x] **P9-T2**: Auth pages (login, register) with Redux-persisted sessions
+- [x] **P9-T3**: Dashboard layout with role-based sidebar, header, and protected routes
+- [x] **P9-T4**: Doctor schedule management — weekly schedule view with pagination
+- [x] **P9-T5**: Patient booking flow — 3-step wizard (select doctor → pick slot → confirm)
+- [x] **P9-T6**: Appointment management views — detail pages with confirm/cancel/complete actions, TanStack Table with server-side pagination
+
+## Phase 10: Testing & Polish (partial)
+- [x] **P10-T1**: E2E tests with Playwright — 23 tests across 5 spec files covering auth (login/logout/session), patient flow (dashboard, booking, detail, cancel), doctor flow (dashboard, schedule, detail), admin flow (dashboard, doctors list, create doctor), and role-based access control
