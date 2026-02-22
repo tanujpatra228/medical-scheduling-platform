@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/api/appointments.api";
 import { toast } from "sonner";
 
@@ -19,6 +19,7 @@ export function useAppointments(params: UseAppointmentsParams = {}) {
     queryKey: ["appointments", filters],
     queryFn: () => api.listAppointments(filters),
     enabled,
+    placeholderData: keepPreviousData,
   });
 }
 

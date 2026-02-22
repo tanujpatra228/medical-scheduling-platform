@@ -22,8 +22,8 @@ export function listAppointments(params: ListAppointmentsParams = {}) {
   if (params.patientId) search.set("patientId", params.patientId);
   if (params.fromDate) search.set("fromDate", params.fromDate);
   if (params.toDate) search.set("toDate", params.toDate);
-  if (params.page) search.set("page", String(params.page));
-  if (params.limit) search.set("limit", String(params.limit));
+  if (params.page !== undefined) search.set("page", String(params.page));
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
   const qs = search.toString();
   return apiRequest<ApiSuccess<Appointment[]> & { meta: PaginationMeta }>(
     `/appointments${qs ? `?${qs}` : ""}`,

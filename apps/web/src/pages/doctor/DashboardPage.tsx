@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { format } from "date-fns";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppointments } from "@/hooks/use-appointments";
@@ -13,18 +13,28 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { formatTimeRange } from "@/lib/date-utils";
 import type { Appointment } from "@/types/api.types";
 
 const DEFAULT_PAGE_SIZE = 20;
 
-function formatTimeRange(startsAt: string, endsAt: string): string {
-  return `${format(new Date(startsAt), "HH:mm")} \u2013 ${format(new Date(endsAt), "HH:mm")}`;
+function truncateId(id: string): string {
+  return id.length > 8 ? `${id.slice(0, 8)}\u2026` : id;
 }
 
 export function DoctorDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const today = new Date();
+
+  const [todayStart, todayEnd] = useMemo(() => {
+    const now = new Date();
+    return [
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(),
+      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString(),
+    ];
+  }, []);
+
+  const todayFormatted = useMemo(() => format(new Date(), "EEEE, MMMM d, yyyy"), []);
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -32,8 +42,8 @@ export function DoctorDashboardPage() {
   });
 
   const { data, isLoading } = useAppointments({
-    fromDate: startOfDay(today).toISOString(),
-    toDate: endOfDay(today).toISOString(),
+    fromDate: todayStart,
+    toDate: todayEnd,
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
   });
@@ -42,15 +52,22 @@ export function DoctorDashboardPage() {
   const meta = data?.meta;
   const pageCount = meta?.totalPages ?? 0;
 
-  const pending = appointments.filter((a) => a.status === "PENDING");
-  const confirmed = appointments.filter((a) => a.status === "CONFIRMED");
-  const completed = appointments.filter((a) => a.status === "COMPLETED");
+  const { pending, confirmed, completed } = useMemo(() => ({
+    pending: appointments.filter((a) => a.status === "PENDING"),
+    confirmed: appointments.filter((a) => a.status === "CONFIRMED"),
+    completed: appointments.filter((a) => a.status === "COMPLETED"),
+  }), [appointments]);
 
   const columns = useMemo<ColumnDef<Appointment, unknown>[]>(
     () => [
       {
         accessorKey: "patientId",
         header: "Patient",
+        cell: ({ getValue }) => (
+          <span className="font-mono text-xs" title={getValue<string>()}>
+            {truncateId(getValue<string>())}
+          </span>
+        ),
       },
       {
         id: "time",
@@ -90,9 +107,7 @@ export function DoctorDashboardPage() {
         <h1 className="text-2xl font-bold">
           Welcome, Dr. {user?.lastName}
         </h1>
-        <p className="text-muted-foreground">
-          {format(today, "EEEE, MMMM d, yyyy")}
-        </p>
+        <p className="text-muted-foreground">{todayFormatted}</p>
       </div>
 
       {/* Stats */}

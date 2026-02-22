@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { format, startOfDay, endOfDay } from "date-fns";
+import { useMemo, useState } from "react";
+import { format } from "date-fns";
 import { type PaginationState } from "@tanstack/react-table";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppointments } from "@/hooks/use-appointments";
@@ -13,16 +13,31 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
+import { formatTimeRange } from "@/lib/date-utils";
 import type { Appointment, AppointmentStatus } from "@/types/api.types";
+
+function truncateId(id: string): string {
+  return id.length > 8 ? `${id.slice(0, 8)}\u2026` : id;
+}
 
 const appointmentColumns: ColumnDef<Appointment, unknown>[] = [
   {
     accessorKey: "patientId",
     header: "Patient",
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs" title={getValue<string>()}>
+        {truncateId(getValue<string>())}
+      </span>
+    ),
   },
   {
     accessorKey: "doctorId",
     header: "Doctor",
+    cell: ({ getValue }) => (
+      <span className="font-mono text-xs" title={getValue<string>()}>
+        {truncateId(getValue<string>())}
+      </span>
+    ),
   },
   {
     accessorKey: "startsAt",
@@ -32,11 +47,7 @@ const appointmentColumns: ColumnDef<Appointment, unknown>[] = [
   {
     id: "time",
     header: "Time",
-    cell: ({ row }) => {
-      const startsAt = new Date(row.original.startsAt);
-      const endsAt = new Date(row.original.endsAt);
-      return `${format(startsAt, "HH:mm")} \u2013 ${format(endsAt, "HH:mm")}`;
-    },
+    cell: ({ row }) => formatTimeRange(row.original.startsAt, row.original.endsAt),
   },
   {
     accessorKey: "status",
@@ -49,21 +60,35 @@ const appointmentColumns: ColumnDef<Appointment, unknown>[] = [
 
 export function AdminDashboardPage() {
   const { user } = useAuth();
-  const today = new Date();
+
+  const [todayStart, todayEnd] = useMemo(() => {
+    const now = new Date();
+    return [
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString(),
+      new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999).toISOString(),
+    ];
+  }, []);
+
+  const todayFormatted = useMemo(() => format(new Date(), "EEEE, MMMM d, yyyy"), []);
 
   const { data: todayApts, isLoading: aptsLoading } = useAppointments({
-    fromDate: startOfDay(today).toISOString(),
-    toDate: endOfDay(today).toISOString(),
+    fromDate: todayStart,
+    toDate: todayEnd,
     limit: 100,
   });
 
-  const { data: docsData, isLoading: docsLoading } = useDoctors(1, 100);
+  const { data: docsData, isLoading: docsLoading } = useDoctors(1, 1);
 
-  const appointments = todayApts?.data ?? [];
-  const doctors = docsData?.data ?? [];
+  const { todayTotal, pending, completed } = useMemo(() => {
+    const apts = todayApts?.data ?? [];
+    return {
+      todayTotal: todayApts?.meta?.total ?? apts.length,
+      pending: apts.filter((a) => a.status === "PENDING").length,
+      completed: apts.filter((a) => a.status === "COMPLETED").length,
+    };
+  }, [todayApts]);
 
-  const pending = appointments.filter((a) => a.status === "PENDING").length;
-  const completed = appointments.filter((a) => a.status === "COMPLETED").length;
+  const doctorCount = docsData?.meta?.total ?? 0;
 
   const isLoading = aptsLoading || docsLoading;
 
@@ -86,8 +111,7 @@ export function AdminDashboardPage() {
       <div>
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <p className="text-muted-foreground">
-          Welcome, {user?.firstName} &middot;{" "}
-          {format(today, "EEEE, MMMM d, yyyy")}
+          Welcome, {user?.firstName} &middot; {todayFormatted}
         </p>
       </div>
 
@@ -106,7 +130,7 @@ export function AdminDashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{doctors.length}</p>
+                <p className="text-3xl font-bold">{doctorCount}</p>
               </CardContent>
             </Card>
             <Card>
@@ -116,7 +140,7 @@ export function AdminDashboardPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{appointments.length}</p>
+                <p className="text-3xl font-bold">{todayTotal}</p>
               </CardContent>
             </Card>
             <Card>

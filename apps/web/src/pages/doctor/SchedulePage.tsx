@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/button";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
 import { DataTable } from "@/components/common/DataTable";
 import { useAppointments } from "@/hooks/use-appointments";
+import { formatTimeRange } from "@/lib/date-utils";
 import type { Appointment } from "@/types/api.types";
 
 const DEFAULT_PAGE_SIZE = 20;
 const DAYS_IN_WEEK = 7;
 
-function formatTimeRange(startsAt: string, endsAt: string): string {
-  return `${format(new Date(startsAt), "HH:mm")} \u2013 ${format(new Date(endsAt), "HH:mm")}`;
+function truncateId(id: string): string {
+  return id.length > 8 ? `${id.slice(0, 8)}\u2026` : id;
 }
 
 export function DoctorSchedulePage() {
@@ -67,6 +68,11 @@ export function DoctorSchedulePage() {
       {
         accessorKey: "patientId",
         header: "Patient",
+        cell: ({ getValue }) => (
+          <span className="font-mono text-xs" title={getValue<string>()}>
+            {truncateId(getValue<string>())}
+          </span>
+        ),
       },
       {
         accessorKey: "status",
@@ -103,6 +109,7 @@ export function DoctorSchedulePage() {
             variant="outline"
             size="sm"
             onClick={navigateToPreviousWeek}
+            aria-label="Previous week"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -114,6 +121,7 @@ export function DoctorSchedulePage() {
             variant="outline"
             size="sm"
             onClick={navigateToNextWeek}
+            aria-label="Next week"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>

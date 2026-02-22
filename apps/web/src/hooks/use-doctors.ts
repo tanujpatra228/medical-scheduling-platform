@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as api from "@/api/doctors.api";
 import { toast } from "sonner";
 
@@ -6,6 +6,7 @@ export function useDoctors(page = 1, limit = 20) {
   return useQuery({
     queryKey: ["doctors", page, limit],
     queryFn: () => api.listDoctors({ page, limit }),
+    placeholderData: keepPreviousData,
   });
 }
 

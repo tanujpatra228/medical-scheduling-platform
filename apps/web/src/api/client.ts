@@ -27,7 +27,10 @@ export function setTokenStore(store: TokenStore) {
   tokenStore = store;
 }
 
-async function refreshAccessToken(): Promise<boolean> {
+// Mutex to prevent concurrent refresh attempts
+let refreshPromise: Promise<boolean> | null = null;
+
+async function doRefreshAccessToken(): Promise<boolean> {
   const refreshToken = tokenStore?.getRefreshToken();
   if (!refreshToken) return false;
 
@@ -40,15 +43,30 @@ async function refreshAccessToken(): Promise<boolean> {
 
     if (!res.ok) return false;
 
-    const json = await res.json();
-    if (json.success) {
-      tokenStore?.setTokens(json.data.accessToken, json.data.refreshToken);
+    let json: unknown;
+    try {
+      json = await res.json();
+    } catch {
+      return false;
+    }
+
+    const data = json as { success?: boolean; data?: { accessToken: string; refreshToken: string } };
+    if (data.success && data.data) {
+      tokenStore?.setTokens(data.data.accessToken, data.data.refreshToken);
       return true;
     }
     return false;
   } catch {
     return false;
   }
+}
+
+function refreshAccessToken(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = doRefreshAccessToken().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
 }
 
 export async function apiRequest<T>(
@@ -58,7 +76,7 @@ export async function apiRequest<T>(
   const url = `${API_BASE_URL}${path}`;
 
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(options.body ? { "Content-Type": "application/json" } : {}),
     ...(options.headers as Record<string, string>),
   };
 
@@ -83,14 +101,25 @@ export async function apiRequest<T>(
     }
   }
 
-  const json = await res.json();
-
-  if (!res.ok || !json.success) {
+  let json: unknown;
+  try {
+    json = await res.json();
+  } catch {
     throw new ApiError(
       res.status,
-      json.error?.code ?? "UNKNOWN_ERROR",
-      json.error?.message ?? "An unexpected error occurred",
-      json.error?.details,
+      "PARSE_ERROR",
+      `Server returned non-JSON response (${res.status})`,
+    );
+  }
+
+  const body = json as { success?: boolean; error?: { code?: string; message?: string; details?: unknown } };
+
+  if (!res.ok || !body.success) {
+    throw new ApiError(
+      res.status,
+      body.error?.code ?? "UNKNOWN_ERROR",
+      body.error?.message ?? "An unexpected error occurred",
+      body.error?.details,
     );
   }
 

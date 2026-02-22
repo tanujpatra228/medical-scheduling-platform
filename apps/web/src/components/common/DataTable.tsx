@@ -121,13 +121,13 @@ function DataTable<TData>({
           <Select
             value={String(pagination.pageSize)}
             onValueChange={(value) => {
-              onPaginationChange({
+              onPaginationChange(() => ({
                 pageIndex: 0,
                 pageSize: Number(value),
-              });
+              }));
             }}
           >
-            <SelectTrigger size="sm">
+            <SelectTrigger size="sm" aria-label="Rows per page">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
