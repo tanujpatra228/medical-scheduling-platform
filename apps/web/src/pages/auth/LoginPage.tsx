@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { CalendarDays } from "lucide-react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { ApiError } from "@/api/client";
 import type { UserRole } from "@/types/api.types";
+import { SAMPLE_LOGIN_GROUPS, SAMPLE_PASSWORD } from "./sample-logins";
 
 const ROLE_HOME: Record<UserRole, string> = {
   PATIENT: "/patient",
@@ -23,20 +24,13 @@ const ROLE_HOME: Record<UserRole, string> = {
   CLINIC_ADMIN: "/admin",
 };
 
-const SAMPLE_LOGINS = [
-  { label: "Admin", email: "admin@gmail.com" },
-  { label: "Doctor", email: "hans.mueller@gmail.com" },
-  { label: "Patient", email: "max.mustermann@gmail.com" },
-] as const;
-
-const SAMPLE_PASSWORD = "Test@123";
-
 export function LoginPage() {
   const { login, isAuthenticated, user } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const cycleIndexes = useRef<Record<string, number>>({});
 
   if (isAuthenticated && user) {
     return <Navigate to={ROLE_HOME[user.role]} replace />;
@@ -113,18 +107,22 @@ export function LoginPage() {
           <div className="border-t px-6 py-4">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               Sample logins{" "}
-              <span className="text-xs">(password: {SAMPLE_PASSWORD})</span>
+              <span className="text-xs">
+                (password: {SAMPLE_PASSWORD} &middot; click to cycle)
+              </span>
             </p>
             <div className="flex flex-wrap gap-2">
-              {SAMPLE_LOGINS.map(({ label, email: sampleEmail }) => (
+              {SAMPLE_LOGIN_GROUPS.map(({ label, emails }) => (
                 <Button
                   key={label}
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setEmail(sampleEmail);
+                    const current = cycleIndexes.current[label] ?? 0;
+                    setEmail(emails[current]);
                     setPassword(SAMPLE_PASSWORD);
+                    cycleIndexes.current[label] = (current + 1) % emails.length;
                   }}
                 >
                   {label}
