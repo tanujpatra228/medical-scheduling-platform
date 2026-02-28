@@ -4,33 +4,13 @@ import {
   ListDoctorsUseCase,
   GetDoctorUseCase,
   CreateDoctorUseCase,
+  UpdateDoctorUseCase,
 } from "@msp/application";
-import type { CreateDoctorDTO } from "@msp/application";
-import type { Doctor } from "@msp/domain";
-
-interface DoctorResponse {
-  id: string;
-  userId: string;
-  clinicId: string;
-  specialization: string;
-  slotDurationMin: number;
-  maxDailyAppointments: number;
-}
+import type { CreateDoctorDTO, UpdateDoctorDTO } from "@msp/application";
 
 interface PaginationQuery {
   page: number;
   limit: number;
-}
-
-function toDoctorResponse(doctor: Doctor): DoctorResponse {
-  return {
-    id: doctor.id,
-    userId: doctor.userId,
-    clinicId: doctor.clinicId,
-    specialization: doctor.specialization,
-    slotDurationMin: doctor.slotDurationMin,
-    maxDailyAppointments: doctor.maxDailyAppointments,
-  };
 }
 
 export class DoctorController {
@@ -38,6 +18,7 @@ export class DoctorController {
     private readonly listDoctorsUseCase: ListDoctorsUseCase,
     private readonly getDoctorUseCase: GetDoctorUseCase,
     private readonly createDoctorUseCase: CreateDoctorUseCase,
+    private readonly updateDoctorUseCase: UpdateDoctorUseCase,
   ) {}
 
   listDoctors: RequestHandler = async (req, res, next) => {
@@ -82,7 +63,7 @@ export class DoctorController {
 
       res.status(StatusCodes.OK).json({
         success: true,
-        data: toDoctorResponse(doctor),
+        data: doctor,
       });
     } catch (error) {
       next(error);
@@ -100,6 +81,27 @@ export class DoctorController {
       const result = await this.createDoctorUseCase.execute(dto, req.user!.role);
 
       res.status(StatusCodes.CREATED).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  updateDoctor: RequestHandler = async (req, res, next) => {
+    try {
+      const doctorId = req.params.doctorId as string;
+      const dto = req.validatedBody as UpdateDoctorDTO;
+
+      const result = await this.updateDoctorUseCase.execute(
+        req.user!.clinicId,
+        doctorId,
+        dto,
+        req.user!.role,
+      );
+
+      res.status(StatusCodes.OK).json({
         success: true,
         data: result,
       });

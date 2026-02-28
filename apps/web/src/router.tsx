@@ -20,6 +20,8 @@ import { DoctorAppointmentDetailPage } from "@/pages/doctor/AppointmentDetailPag
 import { AdminDashboardPage } from "@/pages/admin/DashboardPage";
 import { AdminDoctorsPage } from "@/pages/admin/DoctorsPage";
 import { CreateDoctorPage } from "@/pages/admin/CreateDoctorPage";
+import { DoctorDetailPage } from "@/pages/admin/DoctorDetailPage";
+import { DoctorEditPage } from "@/pages/admin/DoctorEditPage";
 
 export const router = createBrowserRouter([
   // Public routes
@@ -72,6 +74,8 @@ export const router = createBrowserRouter([
           { path: "/admin", element: <AdminDashboardPage /> },
           { path: "/admin/doctors", element: <AdminDoctorsPage /> },
           { path: "/admin/doctors/new", element: <CreateDoctorPage /> },
+          { path: "/admin/doctors/:id", element: <DoctorDetailPage /> },
+          { path: "/admin/doctors/:id/edit", element: <DoctorEditPage /> },
         ],
       },
     ],

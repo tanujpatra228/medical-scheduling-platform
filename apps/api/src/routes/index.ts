@@ -40,6 +40,7 @@ export function registerRoutes(container?: Container): Router {
       container.listDoctors,
       container.getDoctor,
       container.createDoctor,
+      container.updateDoctor,
     );
     const patientController = new PatientController(
       container.getPatientProfile,

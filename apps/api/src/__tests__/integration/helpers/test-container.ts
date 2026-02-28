@@ -30,6 +30,7 @@ import {
   ListDoctorsUseCase,
   GetDoctorUseCase,
   CreateDoctorUseCase,
+  UpdateDoctorUseCase,
   GetPatientProfileUseCase,
   UpdatePatientProfileUseCase,
   CreateAppointmentUseCase,
@@ -114,8 +115,9 @@ export function createTestContainer(dataSource: DataSource): Container {
     getClinic: new GetClinicUseCase(clinicRepo),
     updateClinic: new UpdateClinicUseCase(clinicRepo),
     listDoctors: new ListDoctorsUseCase(doctorRepo, userRepo),
-    getDoctor: new GetDoctorUseCase(doctorRepo),
+    getDoctor: new GetDoctorUseCase(doctorRepo, userRepo),
     createDoctor: new CreateDoctorUseCase(userRepo, doctorRepo, passwordHasher),
+    updateDoctor: new UpdateDoctorUseCase(doctorRepo, userRepo),
     getPatientProfile: new GetPatientProfileUseCase(patientRepo),
     updatePatientProfile: new UpdatePatientProfileUseCase(patientRepo),
 

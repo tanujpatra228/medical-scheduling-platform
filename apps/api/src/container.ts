@@ -38,6 +38,7 @@ import {
   ListDoctorsUseCase,
   GetDoctorUseCase,
   CreateDoctorUseCase,
+  UpdateDoctorUseCase,
   GetPatientProfileUseCase,
   UpdatePatientProfileUseCase,
   CreateAppointmentUseCase,
@@ -88,6 +89,7 @@ export interface Container {
   listDoctors: ListDoctorsUseCase;
   getDoctor: GetDoctorUseCase;
   createDoctor: CreateDoctorUseCase;
+  updateDoctor: UpdateDoctorUseCase;
 
   // Use Cases - Patient
   getPatientProfile: GetPatientProfileUseCase;
@@ -233,8 +235,9 @@ export async function createContainer(): Promise<Container> {
   const updateClinic = new UpdateClinicUseCase(clinicRepo);
 
   const listDoctors = new ListDoctorsUseCase(doctorRepo, userRepo);
-  const getDoctor = new GetDoctorUseCase(doctorRepo);
+  const getDoctor = new GetDoctorUseCase(doctorRepo, userRepo);
   const createDoctor = new CreateDoctorUseCase(userRepo, doctorRepo, passwordHasher);
+  const updateDoctor = new UpdateDoctorUseCase(doctorRepo, userRepo);
 
   const getPatientProfile = new GetPatientProfileUseCase(patientRepo);
   const updatePatientProfile = new UpdatePatientProfileUseCase(patientRepo);
@@ -266,6 +269,7 @@ export async function createContainer(): Promise<Container> {
     listDoctors,
     getDoctor,
     createDoctor,
+    updateDoctor,
     getPatientProfile,
     updatePatientProfile,
     createAppointment,

@@ -10,6 +10,15 @@ export interface CreateDoctorDTO {
   readonly maxDailyAppointments?: number;
 }
 
+export interface UpdateDoctorDTO {
+  readonly firstName?: string;
+  readonly lastName?: string;
+  readonly phone?: string;
+  readonly specialization?: string;
+  readonly slotDurationMin?: number;
+  readonly maxDailyAppointments?: number;
+}
+
 export interface DoctorResponseDTO {
   readonly id: string;
   readonly userId: string;

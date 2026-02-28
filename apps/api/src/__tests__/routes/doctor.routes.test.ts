@@ -4,7 +4,6 @@ import express, { RequestHandler } from "express";
 import { createDoctorRouter } from "@api/routes/doctor.routes";
 import { DoctorController } from "@api/controllers/doctor.controller";
 import { globalErrorHandler } from "@api/middleware/error-handler";
-import { Doctor } from "@msp/domain";
 import { DuplicateEmailError } from "@msp/application";
 import { UserRole } from "@msp/shared";
 import type { DoctorResponseDTO } from "@msp/application";
@@ -17,19 +16,6 @@ function createMockUseCase() {
 const CLINIC_ID = "fb18d473-b5a8-413c-a2f6-8ce943536f31";
 const USER_ID = "cc64bbdc-5af9-4c47-88e5-ab9482a9bc14";
 const DOCTOR_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
-
-function createMockDoctor(): Doctor {
-  return new Doctor({
-    id: DOCTOR_ID,
-    userId: USER_ID,
-    clinicId: CLINIC_ID,
-    specialization: "Cardiology",
-    slotDurationMin: 30,
-    maxDailyAppointments: 20,
-    createdAt: new Date("2025-01-01"),
-    updatedAt: new Date("2025-01-01"),
-  });
-}
 
 function createMockDoctorResponseDTO(): DoctorResponseDTO {
   return {
@@ -60,6 +46,7 @@ function createTestApp(
   listDoctorsUseCase: ReturnType<typeof createMockUseCase>,
   getDoctorUseCase: ReturnType<typeof createMockUseCase>,
   createDoctorUseCase: ReturnType<typeof createMockUseCase>,
+  updateDoctorUseCase?: ReturnType<typeof createMockUseCase>,
   role: string = UserRole.CLINIC_ADMIN,
 ) {
   const app = express();
@@ -70,6 +57,7 @@ function createTestApp(
     listDoctorsUseCase as any,
     getDoctorUseCase as any,
     createDoctorUseCase as any,
+    (updateDoctorUseCase ?? createMockUseCase()) as any,
   );
   app.use(createDoctorRouter(controller));
   app.use(globalErrorHandler as unknown as RequestHandler);
@@ -160,7 +148,7 @@ describe("Doctor Routes", () => {
       };
       listDoctorsUseCase.execute.mockResolvedValue(paginatedResult);
 
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.PATIENT);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.PATIENT);
       const response = await request(app).get("/doctors");
 
       expect(response.status).toBe(200);
@@ -168,23 +156,16 @@ describe("Doctor Routes", () => {
   });
 
   describe("GET /doctors/:doctorId", () => {
-    it("returns 200 with doctor data on success", async () => {
-      const doctor = createMockDoctor();
-      getDoctorUseCase.execute.mockResolvedValue(doctor);
+    it("returns 200 with doctor data including user info on success", async () => {
+      const doctorDto = createMockDoctorResponseDTO();
+      getDoctorUseCase.execute.mockResolvedValue(doctorDto);
 
       const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase);
       const response = await request(app).get(`/doctors/${DOCTOR_ID}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data).toEqual({
-        id: DOCTOR_ID,
-        userId: USER_ID,
-        clinicId: CLINIC_ID,
-        specialization: "Cardiology",
-        slotDurationMin: 30,
-        maxDailyAppointments: 20,
-      });
+      expect(response.body.data).toEqual(doctorDto);
       expect(getDoctorUseCase.execute).toHaveBeenCalledWith(CLINIC_ID, DOCTOR_ID);
     });
 
@@ -200,10 +181,10 @@ describe("Doctor Routes", () => {
     });
 
     it("is accessible to any authenticated role", async () => {
-      const doctor = createMockDoctor();
-      getDoctorUseCase.execute.mockResolvedValue(doctor);
+      const doctorDto = createMockDoctorResponseDTO();
+      getDoctorUseCase.execute.mockResolvedValue(doctorDto);
 
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.PATIENT);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.PATIENT);
       const response = await request(app).get(`/doctors/${DOCTOR_ID}`);
 
       expect(response.status).toBe(200);
@@ -224,7 +205,7 @@ describe("Doctor Routes", () => {
       const doctorDto = createMockDoctorResponseDTO();
       createDoctorUseCase.execute.mockResolvedValue(doctorDto);
 
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.CLINIC_ADMIN);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.CLINIC_ADMIN);
       const response = await request(app)
         .post("/doctors")
         .send(validCreateDoctor);
@@ -239,7 +220,7 @@ describe("Doctor Routes", () => {
     });
 
     it("returns 403 when user is not CLINIC_ADMIN", async () => {
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.DOCTOR);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.DOCTOR);
       const response = await request(app)
         .post("/doctors")
         .send(validCreateDoctor);
@@ -252,7 +233,7 @@ describe("Doctor Routes", () => {
     it("returns 400 when email is missing", async () => {
       const { email, ...withoutEmail } = validCreateDoctor;
 
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.CLINIC_ADMIN);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.CLINIC_ADMIN);
       const response = await request(app)
         .post("/doctors")
         .send(withoutEmail);
@@ -263,7 +244,7 @@ describe("Doctor Routes", () => {
     });
 
     it("returns 400 when password is too short", async () => {
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.CLINIC_ADMIN);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.CLINIC_ADMIN);
       const response = await request(app)
         .post("/doctors")
         .send({ ...validCreateDoctor, password: "short" });
@@ -274,7 +255,7 @@ describe("Doctor Routes", () => {
     });
 
     it("returns 400 when slotDurationMin is below minimum", async () => {
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.CLINIC_ADMIN);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.CLINIC_ADMIN);
       const response = await request(app)
         .post("/doctors")
         .send({ ...validCreateDoctor, slotDurationMin: 10 });
@@ -287,7 +268,7 @@ describe("Doctor Routes", () => {
     it("returns 400 when specialization is missing", async () => {
       const { specialization, ...withoutSpecialization } = validCreateDoctor;
 
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.CLINIC_ADMIN);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.CLINIC_ADMIN);
       const response = await request(app)
         .post("/doctors")
         .send(withoutSpecialization);
@@ -301,7 +282,7 @@ describe("Doctor Routes", () => {
       const doctorDto = createMockDoctorResponseDTO();
       createDoctorUseCase.execute.mockResolvedValue(doctorDto);
 
-      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, UserRole.CLINIC_ADMIN);
+      const app = createTestApp(listDoctorsUseCase, getDoctorUseCase, createDoctorUseCase, undefined, UserRole.CLINIC_ADMIN);
       const response = await request(app)
         .post("/doctors")
         .send({ ...validCreateDoctor, maxDailyAppointments: 15 });

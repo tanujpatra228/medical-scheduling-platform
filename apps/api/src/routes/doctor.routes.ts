@@ -31,6 +31,15 @@ const createDoctorSchema = z.object({
   maxDailyAppointments: z.number().int().min(1).optional(),
 });
 
+const updateDoctorSchema = z.object({
+  firstName: z.string().min(1).max(MAX_NAME_LENGTH).optional(),
+  lastName: z.string().min(1).max(MAX_NAME_LENGTH).optional(),
+  phone: z.string().optional(),
+  specialization: z.string().min(1).max(MAX_SPECIALIZATION_LENGTH).optional(),
+  slotDurationMin: z.number().int().min(MIN_SLOT_DURATION).max(MAX_SLOT_DURATION).optional(),
+  maxDailyAppointments: z.number().int().min(1).optional(),
+});
+
 export function createDoctorRouter(controller: DoctorController): Router {
   const router = Router();
 
@@ -45,6 +54,12 @@ export function createDoctorRouter(controller: DoctorController): Router {
     requireRole(UserRole.CLINIC_ADMIN),
     validate(createDoctorSchema),
     controller.createDoctor,
+  );
+  router.patch(
+    "/doctors/:doctorId",
+    requireRole(UserRole.CLINIC_ADMIN),
+    validate(updateDoctorSchema),
+    controller.updateDoctor,
   );
 
   return router;

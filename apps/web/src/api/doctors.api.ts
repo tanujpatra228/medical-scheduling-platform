@@ -37,3 +37,19 @@ export function createDoctor(params: CreateDoctorParams) {
     body: JSON.stringify(params),
   });
 }
+
+export interface UpdateDoctorParams {
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  specialization?: string;
+  slotDurationMin?: number;
+  maxDailyAppointments?: number;
+}
+
+export function updateDoctor(doctorId: string, params: UpdateDoctorParams) {
+  return apiRequest<ApiSuccess<Doctor>>(`/doctors/${doctorId}`, {
+    method: "PATCH",
+    body: JSON.stringify(params),
+  });
+}

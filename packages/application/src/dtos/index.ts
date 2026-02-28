@@ -18,6 +18,7 @@ export type {
 } from "./appointment.dto";
 export type {
   CreateDoctorDTO,
+  UpdateDoctorDTO,
   DoctorResponseDTO,
 } from "./doctor.dto";
 export type {

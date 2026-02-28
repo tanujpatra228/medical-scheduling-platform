@@ -29,3 +29,16 @@ export function useCreateDoctor() {
     onError: () => toast.error("Failed to create doctor"),
   });
 }
+
+export function useUpdateDoctor() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...params }: api.UpdateDoctorParams & { id: string }) =>
+      api.updateDoctor(id, params),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["doctors"] });
+      toast.success("Doctor updated successfully!");
+    },
+    onError: () => toast.error("Failed to update doctor"),
+  });
+}

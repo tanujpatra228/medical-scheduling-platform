@@ -1,33 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type PaginationState } from "@tanstack/react-table";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataTable, type ColumnDef } from "@/components/common/DataTable";
 import { useDoctors } from "@/hooks/use-doctors";
 import type { Doctor } from "@/types/api.types";
-
-const columns: ColumnDef<Doctor, unknown>[] = [
-  {
-    accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
-    id: "name",
-    header: "Name",
-  },
-  {
-    accessorFn: (row) => row.user.email,
-    id: "email",
-    header: "Email",
-  },
-  {
-    accessorKey: "specialization",
-    header: "Specialization",
-  },
-  {
-    accessorKey: "slotDurationMin",
-    header: "Slot Duration",
-    cell: ({ getValue }) => `${getValue<number>()} min`,
-  },
-];
 
 export function AdminDoctorsPage() {
   const navigate = useNavigate();
@@ -35,6 +13,41 @@ export function AdminDoctorsPage() {
     pageIndex: 0,
     pageSize: 20,
   });
+
+  const columns: ColumnDef<Doctor, unknown>[] = [
+    {
+      accessorFn: (row) => `${row.user.firstName} ${row.user.lastName}`,
+      id: "name",
+      header: "Name",
+    },
+    {
+      accessorFn: (row) => row.user.email,
+      id: "email",
+      header: "Email",
+    },
+    {
+      accessorKey: "specialization",
+      header: "Specialization",
+    },
+    {
+      accessorKey: "slotDurationMin",
+      header: "Slot Duration",
+      cell: ({ getValue }) => `${getValue<number>()} min`,
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate(`/admin/doctors/${row.original.id}`)}
+        >
+          <Eye className="mr-1 h-4 w-4" /> View
+        </Button>
+      ),
+    },
+  ];
 
   const { data, isLoading } = useDoctors(
     pagination.pageIndex + 1,
