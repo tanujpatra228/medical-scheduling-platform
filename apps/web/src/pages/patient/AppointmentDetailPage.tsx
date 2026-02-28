@@ -71,7 +71,7 @@ export function PatientAppointmentDetailPage() {
                 {format(start, "HH:mm")} – {format(end, "HH:mm")}
               </p>
             </div>
-            {doctor && (
+            {doctor?.user && (
               <div>
                 <span className="text-muted-foreground">Doctor</span>
                 <p className="font-medium">
