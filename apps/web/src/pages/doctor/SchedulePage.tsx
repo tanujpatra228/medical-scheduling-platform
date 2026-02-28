@@ -13,10 +13,6 @@ import type { Appointment } from "@/types/api.types";
 const DEFAULT_PAGE_SIZE = 20;
 const DAYS_IN_WEEK = 7;
 
-function truncateId(id: string): string {
-  return id.length > 8 ? `${id.slice(0, 8)}\u2026` : id;
-}
-
 export function DoctorSchedulePage() {
   const navigate = useNavigate();
 
@@ -66,13 +62,9 @@ export function DoctorSchedulePage() {
           formatTimeRange(row.original.startsAt, row.original.endsAt),
       },
       {
-        accessorKey: "patientId",
+        id: "patient",
         header: "Patient",
-        cell: ({ getValue }) => (
-          <span className="font-mono text-xs" title={getValue<string>()}>
-            {truncateId(getValue<string>())}
-          </span>
-        ),
+        cell: ({ row }) => row.original.patientName ?? row.original.patientId,
       },
       {
         accessorKey: "status",

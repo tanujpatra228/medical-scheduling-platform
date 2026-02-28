@@ -22,6 +22,8 @@ export interface AppointmentProps {
   cancelledBy?: string;
   createdAt: Date;
   updatedAt: Date;
+  patientName?: string;
+  doctorName?: string;
 }
 
 export class Appointment {
@@ -38,6 +40,8 @@ export class Appointment {
   private _cancelledBy?: string;
   readonly createdAt: Date;
   private _updatedAt: Date;
+  readonly patientName?: string;
+  readonly doctorName?: string;
 
   private constructor(props: AppointmentProps) {
     this.id = props.id;
@@ -51,6 +55,8 @@ export class Appointment {
     this._cancelledBy = props.cancelledBy;
     this.createdAt = props.createdAt;
     this._updatedAt = props.updatedAt;
+    this.patientName = props.patientName;
+    this.doctorName = props.doctorName;
   }
 
   get status(): AppointmentStatus {

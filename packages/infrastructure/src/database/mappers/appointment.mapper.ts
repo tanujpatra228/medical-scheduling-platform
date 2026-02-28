@@ -9,6 +9,17 @@ import { AppointmentEntity, AppointmentStatusEnum } from "../entities";
 export class AppointmentMapper {
   static toDomain(entity: AppointmentEntity): Appointment {
     const timeSlot = TimeSlot.create(entity.startsAt, entity.endsAt);
+
+    const patientUser = entity.patient?.user;
+    const patientName = patientUser
+      ? `${patientUser.firstName} ${patientUser.lastName}`
+      : undefined;
+
+    const doctorUser = entity.doctor?.user;
+    const doctorName = doctorUser
+      ? `${doctorUser.firstName} ${doctorUser.lastName}`
+      : undefined;
+
     const props: AppointmentProps = {
       id: entity.id,
       clinicId: entity.clinicId,
@@ -21,6 +32,8 @@ export class AppointmentMapper {
       cancelledBy: entity.cancelledBy ?? undefined,
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
+      patientName,
+      doctorName,
     };
     return Appointment.reconstitute(props);
   }

@@ -20,6 +20,7 @@ export class TypeOrmAppointmentRepository implements IAppointmentRepository {
   ): Promise<Appointment | null> {
     const entity = await this.ormRepository.findOne({
       where: { id, clinicId },
+      relations: ["patient", "patient.user", "doctor", "doctor.user"],
     });
 
     return entity ? AppointmentMapper.toDomain(entity) : null;
@@ -72,6 +73,10 @@ export class TypeOrmAppointmentRepository implements IAppointmentRepository {
 
     const queryBuilder = this.ormRepository
       .createQueryBuilder("appointment")
+      .leftJoinAndSelect("appointment.patient", "patient")
+      .leftJoinAndSelect("patient.user", "patientUser")
+      .leftJoinAndSelect("appointment.doctor", "doctor")
+      .leftJoinAndSelect("doctor.user", "doctorUser")
       .where("appointment.clinicId = :clinicId", { clinicId });
 
     if (filters.status) {

@@ -71,9 +71,9 @@ export function DoctorAppointmentDetailPage() {
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Patient ID</span>
-              <p className="font-medium font-mono text-xs">
-                {appointment.patientId}
+              <span className="text-muted-foreground">Patient</span>
+              <p className="font-medium">
+                {appointment.patientName ?? appointment.patientId}
               </p>
             </div>
             <div>

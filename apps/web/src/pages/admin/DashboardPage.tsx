@@ -16,28 +16,16 @@ import { AppointmentStatusBadge } from "@/components/appointments/AppointmentSta
 import { formatTimeRange } from "@/lib/date-utils";
 import type { Appointment, AppointmentStatus } from "@/types/api.types";
 
-function truncateId(id: string): string {
-  return id.length > 8 ? `${id.slice(0, 8)}\u2026` : id;
-}
-
 const appointmentColumns: ColumnDef<Appointment, unknown>[] = [
   {
-    accessorKey: "patientId",
+    id: "patient",
     header: "Patient",
-    cell: ({ getValue }) => (
-      <span className="font-mono text-xs" title={getValue<string>()}>
-        {truncateId(getValue<string>())}
-      </span>
-    ),
+    cell: ({ row }) => row.original.patientName ?? row.original.patientId,
   },
   {
-    accessorKey: "doctorId",
+    id: "doctor",
     header: "Doctor",
-    cell: ({ getValue }) => (
-      <span className="font-mono text-xs" title={getValue<string>()}>
-        {truncateId(getValue<string>())}
-      </span>
-    ),
+    cell: ({ row }) => row.original.doctorName ?? row.original.doctorId,
   },
   {
     accessorKey: "startsAt",

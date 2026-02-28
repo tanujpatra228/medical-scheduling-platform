@@ -88,6 +88,8 @@ export interface Appointment {
   cancelledBy?: string;
   createdAt: string;
   updatedAt: string;
+  patientName?: string;
+  doctorName?: string;
 }
 
 // ── Availability / Slots ─────────────────────────────────────

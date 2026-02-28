@@ -27,6 +27,8 @@ export interface AppointmentResponseDTO {
   readonly cancelledBy?: string;
   readonly createdAt: string;
   readonly updatedAt: string;
+  readonly patientName?: string;
+  readonly doctorName?: string;
 }
 
 export interface SlotResponseDTO {

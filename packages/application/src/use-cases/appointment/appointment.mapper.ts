@@ -17,5 +17,7 @@ export function toAppointmentResponseDTO(
     cancelledBy: appointment.cancelledBy,
     createdAt: appointment.createdAt.toISOString(),
     updatedAt: appointment.updatedAt.toISOString(),
+    patientName: appointment.patientName,
+    doctorName: appointment.doctorName,
   };
 }

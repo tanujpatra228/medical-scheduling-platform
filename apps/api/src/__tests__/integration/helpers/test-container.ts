@@ -90,6 +90,7 @@ export function createTestContainer(dataSource: DataSource): Container {
     eventPublisher,
     tokenProvider,
     passwordHasher,
+    patientRepo,
 
     registerPatient: new RegisterPatientUseCase({
       userRepository: userRepo,

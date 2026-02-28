@@ -18,10 +18,6 @@ import type { Appointment } from "@/types/api.types";
 
 const DEFAULT_PAGE_SIZE = 20;
 
-function truncateId(id: string): string {
-  return id.length > 8 ? `${id.slice(0, 8)}\u2026` : id;
-}
-
 export function DoctorDashboardPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -61,13 +57,9 @@ export function DoctorDashboardPage() {
   const columns = useMemo<ColumnDef<Appointment, unknown>[]>(
     () => [
       {
-        accessorKey: "patientId",
+        id: "patient",
         header: "Patient",
-        cell: ({ getValue }) => (
-          <span className="font-mono text-xs" title={getValue<string>()}>
-            {truncateId(getValue<string>())}
-          </span>
-        ),
+        cell: ({ row }) => row.original.patientName ?? row.original.patientId,
       },
       {
         id: "time",
