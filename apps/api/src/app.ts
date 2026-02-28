@@ -33,8 +33,19 @@ export function createApp(container?: Container): Express {
   return app;
 }
 
+const allowedOrigins = config.corsOrigin.split(",").map((o) => o.trim());
+
 const corsMiddleware: RequestHandler = (req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", config.corsOrigin);
+  const requestOrigin = req.headers.origin ?? "";
+  const origin =
+    allowedOrigins.includes("*") ? "*"
+    : allowedOrigins.includes(requestOrigin) ? requestOrigin
+    : "";
+
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader(
     "Access-Control-Allow-Methods",
     "GET, POST, PUT, PATCH, DELETE, OPTIONS"

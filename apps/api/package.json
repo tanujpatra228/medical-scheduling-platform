@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "ts-node-dev --files -r tsconfig-paths/register --respawn src/server.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node -r ./register-paths.js dist/apps/api/src/server.js",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
