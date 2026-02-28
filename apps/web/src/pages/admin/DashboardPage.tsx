@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
+import { Stethoscope, CalendarDays, Clock, CircleCheck } from "lucide-react";
 import { type PaginationState } from "@tanstack/react-table";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppointments } from "@/hooks/use-appointments";
 import { useDoctors } from "@/hooks/use-doctors";
+import { useAppointmentFilters } from "@/hooks/use-appointment-filters";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { StatCard } from "@/components/common/StatCard";
+import { AppointmentFilterBar } from "@/components/common/AppointmentFilterBar";
 import { DataTable, type ColumnDef } from "@/components/common/DataTable";
 import {
   Card,
@@ -66,6 +70,7 @@ export function AdminDashboardPage() {
   });
 
   const { data: docsData, isLoading: docsLoading } = useDoctors(1, 1);
+  const { data: allDocsData } = useDoctors(1, 100);
 
   const { todayTotal, pending, completed } = useMemo(() => {
     const apts = todayApts?.data ?? [];
@@ -77,16 +82,25 @@ export function AdminDashboardPage() {
   }, [todayApts]);
 
   const doctorCount = docsData?.meta?.total ?? 0;
+  const doctorsList = allDocsData?.data ?? [];
 
   const isLoading = aptsLoading || docsLoading;
 
-  // Recent appointments table with its own pagination
+  // Filtered appointments table
+  const { filters, setFilters, resetFilters, queryParams } = useAppointmentFilters();
+
   const [recentPagination, setRecentPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 10,
   });
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setRecentPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [queryParams.status, queryParams.fromDate, queryParams.toDate, queryParams.doctorId]);
+
   const { data: recentData, isLoading: recentLoading } = useAppointments({
+    ...queryParams,
     page: recentPagination.pageIndex + 1,
     limit: recentPagination.pageSize,
   });
@@ -111,63 +125,52 @@ export function AdminDashboardPage() {
         <>
           {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Doctors
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{doctorCount}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Today's Appointments
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{todayTotal}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Pending
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{pending}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-muted-foreground">
-                  Completed
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">{completed}</p>
-              </CardContent>
-            </Card>
+            <StatCard
+              title="Doctors"
+              value={doctorCount}
+              icon={Stethoscope}
+            />
+            <StatCard
+              title="Today's Appointments"
+              value={todayTotal}
+              icon={CalendarDays}
+            />
+            <StatCard
+              title="Pending"
+              value={pending}
+              icon={Clock}
+            />
+            <StatCard
+              title="Completed"
+              value={completed}
+              icon={CircleCheck}
+            />
           </div>
 
           {/* Recent Appointments */}
-          <section>
-            <h2 className="mb-4 text-lg font-semibold">
-              Recent Appointments
-            </h2>
-            <DataTable
-              columns={appointmentColumns}
-              data={recentAppointments}
-              pageCount={recentMeta?.totalPages ?? 0}
-              pagination={recentPagination}
-              onPaginationChange={setRecentPagination}
-              isLoading={recentLoading}
-              emptyMessage="No appointments found."
-            />
-          </section>
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Appointments</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <AppointmentFilterBar
+                filters={filters}
+                onFiltersChange={setFilters}
+                onReset={resetFilters}
+                showDoctorFilter
+                doctors={doctorsList}
+              />
+              <DataTable
+                columns={appointmentColumns}
+                data={recentAppointments}
+                pageCount={recentMeta?.totalPages ?? 0}
+                pagination={recentPagination}
+                onPaginationChange={setRecentPagination}
+                isLoading={recentLoading}
+                emptyMessage="No appointments found."
+              />
+            </CardContent>
+          </Card>
         </>
       )}
     </div>

@@ -4,14 +4,29 @@ import { format, addDays, startOfWeek, endOfWeek } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
 import { DataTable } from "@/components/common/DataTable";
 import { useAppointments } from "@/hooks/use-appointments";
 import { formatTimeRange } from "@/lib/date-utils";
+import { APPOINTMENT_STATUSES } from "@/lib/appointment-constants";
 import type { Appointment } from "@/types/api.types";
 
 const DEFAULT_PAGE_SIZE = 20;
 const DAYS_IN_WEEK = 7;
+const ALL_STATUSES_VALUE = "__all__";
 
 export function DoctorSchedulePage() {
   const navigate = useNavigate();
@@ -21,6 +36,8 @@ export function DoctorSchedulePage() {
   );
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
 
+  const [statusFilter, setStatusFilter] = useState("");
+
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
@@ -29,6 +46,7 @@ export function DoctorSchedulePage() {
   const { data, isLoading } = useAppointments({
     fromDate: weekStart.toISOString(),
     toDate: weekEnd.toISOString(),
+    status: statusFilter || undefined,
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
   });
@@ -120,15 +138,41 @@ export function DoctorSchedulePage() {
         </div>
       </div>
 
-      <DataTable
-        columns={columns}
-        data={appointments}
-        pageCount={pageCount}
-        pagination={pagination}
-        onPaginationChange={setPagination}
-        isLoading={isLoading}
-        emptyMessage="No appointments scheduled for this week."
-      />
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle>Appointments</CardTitle>
+          <Select
+            value={statusFilter || ALL_STATUSES_VALUE}
+            onValueChange={(v) => {
+              setStatusFilter(v === ALL_STATUSES_VALUE ? "" : v);
+              setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+            }}
+          >
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_STATUSES_VALUE}>All Statuses</SelectItem>
+              {APPOINTMENT_STATUSES.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {s.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </CardHeader>
+        <CardContent>
+          <DataTable
+            columns={columns}
+            data={appointments}
+            pageCount={pageCount}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            isLoading={isLoading}
+            emptyMessage="No appointments scheduled for this week."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

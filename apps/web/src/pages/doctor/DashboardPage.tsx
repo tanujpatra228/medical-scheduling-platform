@@ -1,10 +1,14 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
+import { Clock, CalendarCheck, CircleCheck } from "lucide-react";
 import type { ColumnDef, PaginationState } from "@tanstack/react-table";
 import { useAuth } from "@/hooks/use-auth";
 import { useAppointments } from "@/hooks/use-appointments";
+import { useAppointmentFilters } from "@/hooks/use-appointment-filters";
 import { AppointmentStatusBadge } from "@/components/appointments/AppointmentStatusBadge";
+import { StatCard } from "@/components/common/StatCard";
+import { AppointmentFilterBar } from "@/components/common/AppointmentFilterBar";
 import { DataTable } from "@/components/common/DataTable";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,16 +34,47 @@ export function DoctorDashboardPage() {
     ];
   }, []);
 
+  const todayDateStr = useMemo(() => {
+    const now = new Date();
+    return format(now, "yyyy-MM-dd");
+  }, []);
+
   const todayFormatted = useMemo(() => format(new Date(), "EEEE, MMMM d, yyyy"), []);
+
+  // Today's stats query (unaffected by filters)
+  const { data: todayData } = useAppointments({
+    fromDate: todayStart,
+    toDate: todayEnd,
+    limit: 100,
+  });
+
+  const { pending, confirmed, completed } = useMemo(() => {
+    const apts = todayData?.data ?? [];
+    return {
+      pending: apts.filter((a) => a.status === "PENDING").length,
+      confirmed: apts.filter((a) => a.status === "CONFIRMED").length,
+      completed: apts.filter((a) => a.status === "COMPLETED").length,
+    };
+  }, [todayData]);
+
+  // Filtered appointments table
+  const { filters, setFilters, resetFilters, queryParams } = useAppointmentFilters({
+    fromDate: todayDateStr,
+    toDate: todayDateStr,
+  });
 
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: DEFAULT_PAGE_SIZE,
   });
 
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+  }, [queryParams.status, queryParams.fromDate, queryParams.toDate]);
+
   const { data, isLoading } = useAppointments({
-    fromDate: todayStart,
-    toDate: todayEnd,
+    ...queryParams,
     page: pagination.pageIndex + 1,
     limit: pagination.pageSize,
   });
@@ -47,12 +82,6 @@ export function DoctorDashboardPage() {
   const appointments = data?.data ?? [];
   const meta = data?.meta;
   const pageCount = meta?.totalPages ?? 0;
-
-  const { pending, confirmed, completed } = useMemo(() => ({
-    pending: appointments.filter((a) => a.status === "PENDING"),
-    confirmed: appointments.filter((a) => a.status === "CONFIRMED"),
-    completed: appointments.filter((a) => a.status === "COMPLETED"),
-  }), [appointments]);
 
   const columns = useMemo<ColumnDef<Appointment, unknown>[]>(
     () => [
@@ -104,53 +133,33 @@ export function DoctorDashboardPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">
-              Pending
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{pending.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">
-              Confirmed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{confirmed.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm text-muted-foreground">
-              Completed
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{completed.length}</p>
-          </CardContent>
-        </Card>
+        <StatCard title="Pending" value={pending} icon={Clock} />
+        <StatCard title="Confirmed" value={confirmed} icon={CalendarCheck} />
+        <StatCard title="Completed" value={completed} icon={CircleCheck} />
       </div>
 
       {/* Today's Appointments */}
-      <section>
-        <h2 className="mb-4 text-lg font-semibold">
-          Today&apos;s Appointments
-        </h2>
-        <DataTable
-          columns={columns}
-          data={appointments}
-          pageCount={pageCount}
-          pagination={pagination}
-          onPaginationChange={setPagination}
-          isLoading={isLoading}
-          emptyMessage="No appointments scheduled for today."
-        />
-      </section>
+      <Card>
+        <CardHeader>
+          <CardTitle>Today&apos;s Appointments</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <AppointmentFilterBar
+            filters={filters}
+            onFiltersChange={setFilters}
+            onReset={resetFilters}
+          />
+          <DataTable
+            columns={columns}
+            data={appointments}
+            pageCount={pageCount}
+            pagination={pagination}
+            onPaginationChange={setPagination}
+            isLoading={isLoading}
+            emptyMessage="No appointments scheduled for today."
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }
