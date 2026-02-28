@@ -108,11 +108,9 @@ export function LoginPage() {
             </p>
           </CardFooter>
         </form>
-      </Card>
 
-      {import.meta.env.DEV && (
-        <Card className="mt-4 w-full max-w-md">
-          <CardContent className="pt-6">
+        {import.meta.env.DEV && (
+          <div className="border-t px-6 py-4">
             <p className="mb-3 text-sm font-medium text-muted-foreground">
               Sample logins{" "}
               <span className="text-xs">(password: {SAMPLE_PASSWORD})</span>
@@ -133,9 +131,9 @@ export function LoginPage() {
                 </Button>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
