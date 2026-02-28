@@ -23,6 +23,14 @@ const ROLE_HOME: Record<UserRole, string> = {
   CLINIC_ADMIN: "/admin",
 };
 
+const SAMPLE_LOGINS = [
+  { label: "Admin", email: "admin@gmail.com" },
+  { label: "Doctor", email: "hans.mueller@gmail.com" },
+  { label: "Patient", email: "max.mustermann@gmail.com" },
+] as const;
+
+const SAMPLE_PASSWORD = "Test@123";
+
 export function LoginPage() {
   const { login, isAuthenticated, user } = useAuth();
 
@@ -101,6 +109,33 @@ export function LoginPage() {
           </CardFooter>
         </form>
       </Card>
+
+      {import.meta.env.DEV && (
+        <Card className="mt-4 w-full max-w-md">
+          <CardContent className="pt-6">
+            <p className="mb-3 text-sm font-medium text-muted-foreground">
+              Sample logins{" "}
+              <span className="text-xs">(password: {SAMPLE_PASSWORD})</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SAMPLE_LOGINS.map(({ label, email: sampleEmail }) => (
+                <Button
+                  key={label}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setEmail(sampleEmail);
+                    setPassword(SAMPLE_PASSWORD);
+                  }}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
