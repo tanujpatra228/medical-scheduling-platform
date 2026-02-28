@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --font-bricolage: var(--font-bricolage), ui-sans-serif, system-ui;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  
+  --color-background: #0B0F19; /* Deep Slate */
+  --color-foreground: #F8FAFC;
+  
+  --color-primary: #14B8A6; /* Vivid Teal */
+  --color-primary-foreground: #ffffff;
+  
+  --color-accent: #A3E635; /* Lime */
+  
+  --color-card: #111827;
+  --color-card-foreground: #F8FAFC;
+  
+  --color-border: #1F2937;
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+}
